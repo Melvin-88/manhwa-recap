@@ -1,23 +1,32 @@
 # Skill: Master Narrative
 
 ## Purpose
-Перетворює вхідний сценарій/ідею історії у структурований наратив. Джерело істини для всіх наступних етапів пайплайну.
+Перетворює структуровані факти від Source Ingestion у структурований наратив власною прозою. Джерело істини для всіх наступних етапів пайплайну. Момент трансформації/стиснення історії — не Source Ingestion.
 
 ## Input
-- Сирий сценарій, синопсис, або опис серії (текст)
+`00-source-extract.json` від Source Ingestion (факти: персонажі, world_facts, plot_beats, adaptation_notes) + `script.md` (редакційний бриф людини: обсяг епізоду, свідомі зміни)
 
 ## Output
-Структуровані наративні сцени (JSON або markdown-список), кожна з:
-- scene_id
-- summary (коротко, що відбувається)
-- characters_present (посилання на character_id з registries/character-registry.json)
-- location (посилання на location_id)
-- emotional_beat (що відчуває глядач/персонаж)
+`01-master-narrative.json`:
+```json
+{
+  "episode_id": "ep01",
+  "scenes": [
+    {
+      "scene_id": "SCENE_001",
+      "summary": "",
+      "characters_present": [],
+      "location": "",
+      "emotional_beat": ""
+    }
+  ]
+}
+```
 
 ## Rules
 - Ніколи не визначає візуал (це відповідальність Storyboard Planner/Visual Shot Package).
-- Не вигадує фактів, яких немає у вхідному сценарії.
+- Пише власну прозу на основі фактів з `00-source-extract.json` — не перефразовує оригінальний текст джерела, бо його в файлі й немає (лише факти).
 - Кожна сцена — окрема одиниця, придатна для подальшої обробки Scene Intelligence Engine.
 
 ## Example invocation (концептуально)
-"Ось сценарій епізоду 1: [текст]. Побудуй Master Narrative у форматі JSON зі сценами."
+"Ось факти з 00-source-extract.json для епізоду 1: [JSON]. Побудуй Master Narrative у форматі 01-master-narrative.json зі сценами."
