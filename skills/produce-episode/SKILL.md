@@ -7,6 +7,9 @@
 - `episode_id` (наприклад `ep02`)
 - `episodes/<episode_id>/script.md` — редакційний бриф: URL(и) джерела, обсяг епізоду, свідомі зміни
 
+## Output
+Немає нового формату даних — цей skill лише оркеструє виклики інших skill-агентів у порядку нижче й читає/пише ті самі пронумеровані файли епізоду, що визначені в їхніх власних секціях Output.
+
 ## Sequence
 
 1. **Source Ingestion** → пише `episodes/<episode_id>/00-source-extract.json`
