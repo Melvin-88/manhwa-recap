@@ -29,4 +29,4 @@
 
 ## Rules
 - НЕ генерує текстовий промпт — це відповідальність Prompt Compiler.
-- Обов'язково посилається на конкретні `reference_image_path` з character-registry для кожного персонажа в кадрі.
+- Обов'язково посилається на конкретні `reference_sheet_path` з character-registry для кожного персонажа в кадрі.

@@ -62,7 +62,7 @@ Master Narrative
 Розбиває сцени на кінематографічні шоти й візуальні біти. Визначає камери, композиційні цілі, темп.
 
 ### Registry Builder
-Підтримує незмінні реєстри: Character, Location, Prop, Camera, Palette, Style, Generator. Діє як Single Source of Truth. Викликається на вимогу — вперше одразу після Source Ingestion, повторно під час Storyboard Planner.
+Підтримує незмінні реєстри: Character, Location, Prop, Camera, Palette, Style. Діє як Single Source of Truth. Викликається на вимогу — вперше одразу після Source Ingestion, повторно під час Storyboard Planner.
 
 ### Visual Shot Package
 Об'єднує storyboard з інформацією реєстру в повні візуальні специфікації. Містить: камеру, освітлення, композицію, безперервність, обмеження рендеру, memory images, емоційну арку. **Не генерує промпти.**
@@ -89,7 +89,6 @@ Master Narrative
 | CAM | Пресети камер (кут, лінза, рух) |
 | PAL | Кольорові палітри по сценах/настроях |
 | STYLE | Глобальний стиль проєкту |
-| GENERATOR | Налаштування конкретної генеративної моделі |
 
 ## Current JSON Artifacts
 
@@ -104,7 +103,7 @@ Master Narrative
 
 ## Future Expansion
 
-Prompt Optimizer, Continuity Resolver, Animation, Video, Audio, 3D support.
+Prompt Optimizer, Continuity Resolver, Animation, Video, 3D support.
 
 ## Open Items (перенести в реєстри при заповненні)
 
