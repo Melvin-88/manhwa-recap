@@ -6,9 +6,9 @@
     "shading_approach": "",
     "reference_images": [],
     "generator_config": {
-      "primary_model": "nano-banana-2",
-      "secondary_model": "seedream-4.5",
-      "fallback_model": "sdxl-flux-lora"
+      "generation_backend": "claude-mcp-media",
+      "fallback_model": "nano-banana-2",
+      "fallback_notes": "Задокументовано, але неактивно. Перехід на пряме API не вимагає змін у Prompt Compiler/Image Director, лише перемикання generation_backend."
     }
   }
 }
