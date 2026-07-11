@@ -1,0 +1,14 @@
+{
+  "_schema_note": "Глобальний Style Preset проєкту. Один набір на серіал для візуальної консистентності між епізодами.",
+  "project_style": {
+    "art_style": "",
+    "line_weight": "",
+    "shading_approach": "",
+    "reference_images": [],
+    "generator_config": {
+      "primary_model": "nano-banana-2",
+      "secondary_model": "seedream-4.5",
+      "fallback_model": "sdxl-flux-lora"
+    }
+  }
+}

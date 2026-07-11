@@ -1,0 +1,17 @@
+{
+  "_schema_note": "Пресети камер для Storyboard Planner. Кожен шот посилається на camera_id замість опису з нуля.",
+  "camera_presets": [
+    {
+      "camera_id": "CAM_CLOSEUP",
+      "shot_type": "close-up",
+      "lens_feel": "",
+      "typical_use": "emotional beats"
+    },
+    {
+      "camera_id": "CAM_WIDE",
+      "shot_type": "wide/establishing",
+      "lens_feel": "",
+      "typical_use": "scene setting"
+    }
+  ]
+}

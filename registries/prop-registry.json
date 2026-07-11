@@ -1,0 +1,12 @@
+{
+  "_schema_note": "Повторювані предмети/об'єкти (зброя, артефакти, символи), що з'являються в кількох сценах.",
+  "props": [
+    {
+      "prop_id": "PROP_001",
+      "name": "",
+      "visual_description": "",
+      "associated_character_id": "",
+      "locked": false
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "_schema_note": "Single Source of Truth для персонажів. Registry Builder читає/пише сюди. Prompt Compiler резолвить character_id в опис при побудові промпту.",
+  "characters": [
+    {
+      "character_id": "CHAR_001",
+      "name": "",
+      "role": "protagonist | antagonist | supporting",
+      "appearance": {
+        "age_range": "",
+        "build": "",
+        "hair": "",
+        "eyes": "",
+        "distinguishing_features": "",
+        "default_outfit": ""
+      },
+      "personality_visual_cues": "",
+      "voice_id_elevenlabs": "",
+      "reference_sheet_path": "characters/CHAR_001/",
+      "generator_notes": {
+        "preferred_model": "nano-banana-2",
+        "reference_image_count": 5,
+        "consistency_notes": ""
+      },
+      "locked": false
+    }
+  ]
+}
