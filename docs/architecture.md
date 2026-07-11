@@ -22,25 +22,38 @@ Memoria — registry-driven cinematic image generation pipeline. Наратив 
 ## Pipeline
 
 ```
+Source Ingestion
+   ↓
+   ├──→ Registry Builder (on-demand)
+   ↓
 Master Narrative
    ↓
-Scene Intelligence Engine
-   ↓
-Storyboard Planner
-   ↓
-Registry Builder
-   ↓
-Visual Shot Package
-   ↓
-Prompt Compiler
-   ↓
-Image Director
-   ↓
-Image Generator
+   ├─── Візуальна гілка ────────────────────────┐
+   │  Scene Intelligence Engine                 │
+   │     ↓                                      │
+   │  Storyboard Planner ←── Registry Builder    │
+   │     ↓                                      │
+   │  Visual Shot Package                       │
+   │     ↓                                      │
+   │  Prompt Compiler                           │
+   │     ↓                                      │
+   │  Image Director → generate_image (MCP)     │
+   │                                             │
+   └─── Аудіо гілка ────────────────────────────┐│
+      Narrator / Audio Director                 ││
+        ↓                                       ││
+      create_voice + generate_audio (MCP)       ││
+                                                  ↓↓
+                                              Assembly
+                                       (механічний ffmpeg-скрипт,
+                                        не LLM-агент)
 ```
 
+### Source Ingestion
+Перетворює готовий розділ(и) джерела (веб-новела/манхва за URL) у структуровані факти без збереження оригінального тексту дослівно. Вхід: URL(и) розділів. Вихід: `00-source-extract.json`. Ніколи не зберігає оригінальний текст дослівно — лише факти й короткі власні формулювання.
+
 ### Master Narrative
-Перетворює історію в структурований наратив. Вхід: сценарій. Вихід: наративні сцени. Ніколи не визначає візуал.
+Перетворює факти від Source Ingestion в структурований наратив власною прозою. Вхід: `00-source-extract.json` + `script.md`. Вихід: наративні сцени. Ніколи не визначає візуал.
 
 ### Scene Intelligence Engine
 Виділяє: намір сцени, емоційну арку, хронологію, безперервність, сутності, логіку середовища.
@@ -49,18 +62,22 @@ Image Generator
 Розбиває сцени на кінематографічні шоти й візуальні біти. Визначає камери, композиційні цілі, темп.
 
 ### Registry Builder
-Підтримує незмінні реєстри: Character, Location, Prop, Camera, Palette, Style, Generator. Діє як Single Source of Truth.
+Підтримує незмінні реєстри: Character, Location, Prop, Camera, Palette, Style, Generator. Діє як Single Source of Truth. Викликається на вимогу — вперше одразу після Source Ingestion, повторно під час Storyboard Planner.
 
 ### Visual Shot Package
 Об'єднує storyboard з інформацією реєстру в повні візуальні специфікації. Містить: камеру, освітлення, композицію, безперервність, обмеження рендеру, memory images, емоційну арку. **Не генерує промпти.**
 
 ### Prompt Compiler
-Приймає Visual Shot Package + Registry. Вирішує конфлікти, розгортає registry locks, будує model-specific промпти, generator globals, compiler flags.
-
-> **Оновлення 2026:** цільові генератори — Nano Banana 2/Pro та Seedream 4.5 (reference-native, не потребують LoRA-тренування). SDXL/Flux+LoRA лишається fallback-опцією. Prompt Compiler повинен вміти будувати промпти під обидва типи моделей.
+Приймає Visual Shot Package + Registry. Вирішує конфлікти, розгортає registry locks, будує промпти під `generation_backend` зі style-registry.
 
 ### Image Director
-Приймає скомпільовані промпти. Застосовує Style Preset проєкту, валідує консистентність, виконує model tuning, готує фінальний generation prompt. **Не перепроєктовує персонажів чи середовища.**
+Приймає скомпільовані промпти. Застосовує Style Preset проєкту, валідує консистентність, викликає генератор (`generate_image`/`upscale_image` для пілоту). **Не перепроєктовує персонажів чи середовища.**
+
+### Narrator / Audio Director
+Паралельна аудіо-гілка. Перетворює сцени Master Narrative у наративний/діалоговий текст, генерує озвучення через `create_voice`/`generate_audio`, використовуючи закріплені voice_id персонажів. Не залежить від візуальної гілки.
+
+### Assembly
+Механічний ffmpeg-скрипт, не LLM-агент. Збирає картинки за pacing_note шотів + аудіодоріжку + субтитри у фінальний mp4.
 
 ## Registry System
 
@@ -76,7 +93,7 @@ Image Generator
 
 ## Current JSON Artifacts
 
-Resolved Shot Package → Visual Shot Package → Prompt Package.
+`00-source-extract.json` → `01-master-narrative.json` → `02-scene-intelligence.json` (+ паралельно `audio/02b-narration-script.json`) → `03-storyboard.json` → `04-visual-shot-package.json` → `05-prompt-package.json` → `06-generation-log.json` (+ `audio/generation-log.json`) → `final/<episode_id>.mp4`. Повний контракт полів кожного файлу — у відповідному `skills/<name>/SKILL.md`, секція Output.
 
 ## Design Decisions
 
@@ -91,6 +108,6 @@ Prompt Optimizer, Continuity Resolver, Animation, Video, Audio, 3D support.
 
 ## Open Items (перенести в реєстри при заповненні)
 
-- [ ] Наповнити `registries/character-registry.json` для поточної історії
-- [ ] Наповнити `registries/style-registry.json` (референс-画像, палітра, лінія)
-- [ ] Визначити конкретний Generator registry entry для Nano Banana 2 / Seedream 4.5
+- [ ] Наповнити `registries/character-registry.json` для поточної історії (адаптованої з джерела)
+- [ ] Наповнити `registries/style-registry.json` (референс-зображення, палітра, лінія)
+- [ ] Обрати конкретне джерело (URL веб-новели/манхви) для першого епізоду

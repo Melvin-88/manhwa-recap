@@ -15,9 +15,12 @@ Registry-driven pipeline для генерації озвучених серій
 memoria/
 ├── README.md                    ← цей файл
 ├── docs/
-│   ├── architecture.md          ← опис пайплайну і принципів (з оригінального Word-документа)
+│   ├── architecture.md          ← опис пайплайну і принципів
 │   ├── business-analysis.md     ← ринок, копірайт, технології, бізнес-модель
-│   └── pilot-plan.md            ← покроковий план пілотного запуску + план автоматизації OpenClaw
+│   ├── pilot-plan.md            ← покроковий план пілотного запуску + план автоматизації OpenClaw
+│   └── superpowers/
+│       ├── specs/                ← архітектурні дизайн-спеки
+│       └── plans/                ← implementation-плани
 ├── registries/                  ← Single Source of Truth: персонажі, локації, стиль тощо
 │   ├── character-registry.json
 │   ├── location-registry.json
@@ -27,18 +30,28 @@ memoria/
 │   └── style-registry.json
 ├── characters/                  ← character sheets (референсні зображення + опис) по кожному персонажу
 ├── skills/                      ← кожен агент пайплайну як SKILL.md (сумісно з OpenClaw)
+│   ├── source-ingestion/
 │   ├── master-narrative/
 │   ├── scene-intelligence-engine/
 │   ├── storyboard-planner/
 │   ├── registry-builder/
 │   ├── visual-shot-package/
 │   ├── prompt-compiler/
-│   └── image-director/
+│   ├── image-director/
+│   ├── narrator-audio-director/
+│   └── produce-episode/         ← оркеструє весь пайплайн однією командою
 └── episodes/                    ← робочі файли по кожному епізоду
     └── ep01/
-        ├── script.md            ← сценарій/наратив
-        ├── shot-package.json    ← Visual Shot Package
-        └── prompts.json         ← скомпільовані промпти для генератора
+        ├── script.md              ← редакційний бриф: URL джерела + свідомі зміни
+        ├── 00-source-extract.json
+        ├── 01-master-narrative.json
+        ├── 02-scene-intelligence.json
+        ├── 03-storyboard.json
+        ├── 04-visual-shot-package.json
+        ├── 05-prompt-package.json
+        ├── 06-generation-log.json
+        ├── audio/
+        └── final/
 ```
 
 ## Як передати іншій LLM або OpenClaw
