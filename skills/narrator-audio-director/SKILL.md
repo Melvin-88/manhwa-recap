@@ -1,0 +1,40 @@
+# Skill: Narrator / Audio Director
+
+## Purpose
+Паралельна аудіо-гілка пайплайну. Перетворює сцени з Master Narrative у наративний/діалоговий текст і генерує озвучення, використовуючи закріплені voice_id персонажів. Не залежить від Storyboard/Visual Shot Package — стартує одразу після Master Narrative.
+
+## Input
+- Сцени з `01-master-narrative.json` (`scene_id`, `summary`, `emotional_beat`)
+- `voice_id` кожного присутнього персонажа з `registries/character-registry.json`
+
+## Output
+`audio/02b-narration-script.json`:
+```json
+{
+  "episode_id": "ep01",
+  "narration_lines": [
+    {
+      "scene_id": "",
+      "character_id": "",
+      "voice_id": "",
+      "text": "",
+      "emotional_tone": ""
+    }
+  ]
+}
+```
+
+`audio/generation-log.json`:
+```json
+{
+  "episode_id": "ep01",
+  "generated_assets": [
+    {"scene_id": "", "character_id": "", "audio_path": "", "generated_at": "", "flagged_for_review": false}
+  ]
+}
+```
+
+## Rules
+- `voice_id` створюється один раз на персонажа (кешується в `character-registry.json`), не перегенеровується щоразу.
+- Якщо емоційний тон сцени суттєво розходиться з попереднім використанням голосу цього персонажа — позначає `flagged_for_review: true`, не генерує мовчки (за аналогією з правилом Image Director).
+- Не визначає візуал і не залежить від шотів — паралельна гілка, не послідовний крок після Storyboard Planner.
