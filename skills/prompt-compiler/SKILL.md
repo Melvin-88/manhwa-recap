@@ -1,19 +1,29 @@
 # Skill: Prompt Compiler
 
 ## Purpose
-Перетворює Visual Shot Package + дані реєстру в конкретний промпт для обраної генеративної моделі.
+Перетворює Visual Shot Package + дані реєстру в конкретний промпт для обраного генератора.
 
 ## Input
-- Visual Shot Package (JSON)
-- Style registry (registries/style-registry.json) для generator_config
+- `04-visual-shot-package.json`
+- `registries/style-registry.json` для `generator_config` (поле `generation_backend`)
 
 ## Output
-Model-specific промпт-пакет:
-- prompt_text (готовий текстовий промпт)
-- reference_images (шляхи до character sheets, якщо модель підтримує image-conditioning — Nano Banana 2, Seedream)
-- generator_globals (негативні промпти, seed-стратегія якщо застосовно)
-- compiler_flags
+`05-prompt-package.json`:
+```json
+{
+  "episode_id": "ep01",
+  "prompt_packages": [
+    {
+      "shot_id": "SHOT_001",
+      "prompt_text": "",
+      "reference_images": [],
+      "generator_globals": {},
+      "compiler_flags": {}
+    }
+  ]
+}
+```
 
 ## Rules
 - Вирішує конфлікти між registry-даними (напр. якщо освітлення сцени суперечить дефолтному освітленню локації — сцена має пріоритет).
-- Будує промпт під конкретну модель з generator_config (nano-banana-2 / seedream-4.5 / fallback sdxl-flux-lora) — формат промпту відрізняється між ними.
+- Будує промпт під `generation_backend` зі `style-registry.json` (`claude-mcp-media` за замовчуванням для пілоту; `fallback_model` — задокументована, неактивна альтернатива, перехід на яку не вимагає змін цього skill, лише перемикання `generation_backend`).
