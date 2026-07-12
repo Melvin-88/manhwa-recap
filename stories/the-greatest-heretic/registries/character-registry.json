@@ -1,0 +1,143 @@
+{
+  "_schema_note": "Single Source of Truth для персонажів. Registry Builder читає/пише сюди. Prompt Compiler резолвить character_id в опис при побудові промпту. source_name трасує адаптацію з джерела (Source Ingestion) і ніколи не виводиться в публічний контент.",
+  "characters": [
+    {
+      "character_id": "CHAR_001",
+      "name": "Дарен",
+      "source_name": "Астар",
+      "role": "protagonist",
+      "appearance": {
+        "age_range": "молодий дорослий (20-30)",
+        "build": "",
+        "hair": "чорне, зі слабким фіолетовим відтінком на світлі, зібране в недбалий пучок",
+        "eyes": "яскраво-блакитні",
+        "distinguishing_features": "у погляді читається щось важке, невідповідне його молодому вигляду",
+        "default_outfit": "лахміття, зняте з мертвого в'язня (стартовий одяг у камері/шахті)"
+      },
+      "personality_visual_cues": "прагматичний, стримує паніку, вдає нетямущого перед охороною",
+      "voice_id": "",
+      "reference_sheet_path": "characters/CHAR_001/reference.png",
+      "generator_notes": {
+        "preferred_model": "claude-mcp-media",
+        "reference_image_count": 5,
+        "consistency_notes": ""
+      },
+      "locked": false
+    },
+    {
+      "character_id": "CHAR_002",
+      "name": "Ліам",
+      "source_name": "Джеймс",
+      "role": "supporting",
+      "appearance": {
+        "age_range": "",
+        "build": "",
+        "hair": "",
+        "eyes": "",
+        "distinguishing_features": "",
+        "default_outfit": ""
+      },
+      "personality_visual_cues": "жартівливий, схильний до псевдо-філософських порад, найкращий друг протагоніста з притулку",
+      "voice_id": "",
+      "reference_sheet_path": "characters/CHAR_002/",
+      "generator_notes": {
+        "preferred_model": "claude-mcp-media",
+        "reference_image_count": 5,
+        "consistency_notes": ""
+      },
+      "locked": false
+    },
+    {
+      "character_id": "CHAR_003",
+      "name": "Кордан",
+      "source_name": "Даланар",
+      "role": "supporting",
+      "appearance": {
+        "age_range": "",
+        "build": "кремезний, впевнена постава колишнього командира",
+        "hair": "чорне, зібране в тугий хвіст",
+        "eyes": "",
+        "distinguishing_features": "обличчя вкрите шрамами, втомлений, але твердий погляд",
+        "default_outfit": "лахміття бранця шахти"
+      },
+      "personality_visual_cues": "суворий, прагматичний, безжально жорсткий із зрадниками; гине наприкінці епізоду 1",
+      "voice_id": "",
+      "reference_sheet_path": "characters/CHAR_003/reference.png",
+      "generator_notes": {
+        "preferred_model": "claude-mcp-media",
+        "reference_image_count": 5,
+        "consistency_notes": ""
+      },
+      "locked": false
+    },
+    {
+      "character_id": "CHAR_004",
+      "name": "Мірель",
+      "source_name": "Сіраель",
+      "role": "supporting",
+      "appearance": {
+        "age_range": "молода доросла (~20)",
+        "build": "мініатюрна",
+        "hair": "чорне, до підборіддя",
+        "eyes": "темно-сині",
+        "distinguishing_features": "рогата гуманоїдна раса (ноксулі): синьо-сіра шкіра, довгі вигнуті роги, загострені вуха, безволосий хвіст",
+        "default_outfit": "дорожній аристократичний одяг торговельного роду"
+      },
+      "personality_visual_cues": "стримана, дипломатична, допитлива; спадкоємиця роду Тенебрис",
+      "voice_id": "",
+      "reference_sheet_path": "characters/CHAR_004/reference.png",
+      "generator_notes": {
+        "preferred_model": "claude-mcp-media",
+        "reference_image_count": 5,
+        "consistency_notes": ""
+      },
+      "locked": false
+    },
+    {
+      "character_id": "CHAR_005",
+      "name": "Кассіан",
+      "source_name": "Лукаріс",
+      "role": "supporting",
+      "appearance": {
+        "age_range": "молодий дорослий",
+        "build": "вищий і стрункіший за сестру",
+        "hair": "чорне, коротке",
+        "eyes": "темно-сині",
+        "distinguishing_features": "рогата гуманоїдна раса (ноксулі): синьо-сіра шкіра, довгі вигнуті роги, загострені вуха, безволосий хвіст",
+        "default_outfit": "дорожній аристократичний одяг торговельного роду"
+      },
+      "personality_visual_cues": "легковажний зовні, насправді ерудований і уважний; брат Мірель",
+      "voice_id": "",
+      "reference_sheet_path": "characters/CHAR_005/reference.png",
+      "generator_notes": {
+        "preferred_model": "claude-mcp-media",
+        "reference_image_count": 5,
+        "consistency_notes": ""
+      },
+      "locked": false
+    },
+    {
+      "character_id": "CHAR_006",
+      "name": "Гарт",
+      "source_name": "Зунар",
+      "role": "supporting",
+      "appearance": {
+        "age_range": "",
+        "build": "кремезний, військова постава",
+        "hair": "",
+        "eyes": "",
+        "distinguishing_features": "рогата гуманоїдна раса (ноксулі); обличчя приховане маскою",
+        "default_outfit": "легка броня охоронця каравану"
+      },
+      "personality_visual_cues": "стриманий, відповідальний командир охорони каравану роду Тенебрис",
+      "voice_id": "",
+      "reference_sheet_path": "characters/CHAR_006/reference.png",
+      "generator_notes": {
+        "preferred_model": "claude-mcp-media",
+        "reference_image_count": 5,
+        "consistency_notes": ""
+      },
+      "locked": false
+    }
+  ]
+}

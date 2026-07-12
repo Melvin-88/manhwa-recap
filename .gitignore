@@ -19,15 +19,24 @@ npm-debug.log*
 *.log
 
 # Generated media (AI-generated images/audio/video output)
+# За замовчуванням ігноруємо великі медіафайли, АЛЕ канонічні матеріали
+# історії (референс-аркуші персонажів + фінальні згенеровані кадри епізодів)
+# зберігаємо в репозиторії навмисно — див. docs/architecture.md "Структура для кількох історій".
 *.mp4
 *.mp3
 *.wav
 *.png
 *.jpg
 *.jpeg
-!characters/**/*.png
-!characters/**/*.jpg
-!characters/**/*.jpeg
+!stories/**/characters/**/*.png
+!stories/**/characters/**/*.jpg
+!stories/**/characters/**/*.jpeg
+!stories/**/episodes/**/generated/**/*.png
+!stories/**/episodes/**/generated/**/*.jpg
+!stories/**/episodes/**/generated/**/*.jpeg
+!stories/**/episodes/**/audio/**/*.mp3
+!stories/**/episodes/**/audio/**/*.wav
+!stories/**/episodes/**/final/**/*.mp4
 
 # Temp
 tmp/
