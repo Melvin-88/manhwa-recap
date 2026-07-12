@@ -31,6 +31,12 @@ npm-debug.log*
 !stories/**/characters/**/*.png
 !stories/**/characters/**/*.jpg
 !stories/**/characters/**/*.jpeg
+!stories/**/creatures/**/*.png
+!stories/**/creatures/**/*.jpg
+!stories/**/creatures/**/*.jpeg
+!stories/**/props/**/*.png
+!stories/**/props/**/*.jpg
+!stories/**/props/**/*.jpeg
 !stories/**/episodes/**/generated/**/*.png
 !stories/**/episodes/**/generated/**/*.jpg
 !stories/**/episodes/**/generated/**/*.jpeg

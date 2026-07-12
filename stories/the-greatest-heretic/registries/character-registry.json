@@ -1,5 +1,5 @@
 {
-  "_schema_note": "Single Source of Truth для персонажів. Registry Builder читає/пише сюди. Prompt Compiler резолвить character_id в опис при побудові промпту. source_name трасує адаптацію з джерела (Source Ingestion) і ніколи не виводиться в публічний контент.",
+  "_schema_note": "Single Source of Truth для персонажів. Registry Builder читає/пише сюди. Prompt Compiler резолвить character_id в опис при побудові промпту. source_name трасує адаптацію з джерела (Source Ingestion) і ніколи не виводиться в публічний контент. voice_id перейменовано на voice_ids (мапа мова->voice_id) — див. stories/<story_slug>/story-config.json для списку активних мов.",
   "characters": [
     {
       "character_id": "CHAR_001",
@@ -15,14 +15,25 @@
         "default_outfit": "лахміття, зняте з мертвого в'язня (стартовий одяг у камері/шахті)"
       },
       "personality_visual_cues": "прагматичний, стримує паніку, вдає нетямущого перед охороною",
-      "voice_id": "",
       "reference_sheet_path": "characters/CHAR_001/reference.png",
+      "appearance_states": [
+        {
+          "state_id": "v1",
+          "description": "базовий вигляд у шахті — лахміття мертвого в'язня (з SCENE_004)",
+          "valid_from_scene": "SCENE_004",
+          "reference_sheet_path": "characters/CHAR_001/reference.png",
+          "locked": false
+        }
+      ],
       "generator_notes": {
         "preferred_model": "claude-mcp-media",
         "reference_image_count": 5,
-        "consistency_notes": ""
+        "consistency_notes": "Референс-аркуш — розворот (анфас/3-4/профіль) + 2 вирази обличчя, згенеровано з попереднього портрета-анфас як умову для збереження обличчя."
       },
-      "locked": false
+      "locked": false,
+      "voice_ids": {
+        "uk": "573e5163-59b3-4926-aab1-951ef2985f81"
+      }
     },
     {
       "character_id": "CHAR_002",
@@ -38,14 +49,14 @@
         "default_outfit": ""
       },
       "personality_visual_cues": "жартівливий, схильний до псевдо-філософських порад, найкращий друг протагоніста з притулку",
-      "voice_id": "",
-      "reference_sheet_path": "characters/CHAR_002/",
+      "reference_sheet_path": "",
       "generator_notes": {
         "preferred_model": "claude-mcp-media",
         "reference_image_count": 5,
-        "consistency_notes": ""
+        "consistency_notes": "Референс не генерувався — у сторіборді епізоду 1 персонаж жодного разу не з'являється в кадрі (лише голос по телефону), тому не потребує reference_sheet_path per правило Image Director."
       },
-      "locked": false
+      "locked": false,
+      "voice_ids": {}
     },
     {
       "character_id": "CHAR_003",
@@ -61,14 +72,23 @@
         "default_outfit": "лахміття бранця шахти"
       },
       "personality_visual_cues": "суворий, прагматичний, безжально жорсткий із зрадниками; гине наприкінці епізоду 1",
-      "voice_id": "",
       "reference_sheet_path": "characters/CHAR_003/reference.png",
+      "appearance_states": [
+        {
+          "state_id": "v1",
+          "description": "базовий вигляд — лахміття бранця шахти (незмінний до загибелі в SCENE_063)",
+          "valid_from_scene": "SCENE_024",
+          "reference_sheet_path": "characters/CHAR_003/reference.png",
+          "locked": false
+        }
+      ],
       "generator_notes": {
         "preferred_model": "claude-mcp-media",
         "reference_image_count": 5,
-        "consistency_notes": ""
+        "consistency_notes": "Вже у форматі розвороту з кількома ракурсами й емоціями — орієнтир якості для решти персонажів, не перегенеровувався повторно."
       },
-      "locked": false
+      "locked": false,
+      "voice_ids": {}
     },
     {
       "character_id": "CHAR_004",
@@ -84,14 +104,23 @@
         "default_outfit": "дорожній аристократичний одяг торговельного роду"
       },
       "personality_visual_cues": "стримана, дипломатична, допитлива; спадкоємиця роду Тенебрис",
-      "voice_id": "",
       "reference_sheet_path": "characters/CHAR_004/reference.png",
+      "appearance_states": [
+        {
+          "state_id": "v1",
+          "description": "базовий вигляд — дорожній аристократичний одяг торговельного роду",
+          "valid_from_scene": "SCENE_093",
+          "reference_sheet_path": "characters/CHAR_004/reference.png",
+          "locked": false
+        }
+      ],
       "generator_notes": {
         "preferred_model": "claude-mcp-media",
         "reference_image_count": 5,
-        "consistency_notes": ""
+        "consistency_notes": "Референс-аркуш — розворот (анфас/3-4/профіль) + 2 вирази обличчя, згенеровано з попереднього портрета-анфас як умову для збереження обличчя."
       },
-      "locked": false
+      "locked": false,
+      "voice_ids": {}
     },
     {
       "character_id": "CHAR_005",
@@ -107,14 +136,23 @@
         "default_outfit": "дорожній аристократичний одяг торговельного роду"
       },
       "personality_visual_cues": "легковажний зовні, насправді ерудований і уважний; брат Мірель",
-      "voice_id": "",
       "reference_sheet_path": "characters/CHAR_005/reference.png",
+      "appearance_states": [
+        {
+          "state_id": "v1",
+          "description": "базовий вигляд — дорожній аристократичний одяг торговельного роду",
+          "valid_from_scene": "SCENE_093",
+          "reference_sheet_path": "characters/CHAR_005/reference.png",
+          "locked": false
+        }
+      ],
       "generator_notes": {
         "preferred_model": "claude-mcp-media",
         "reference_image_count": 5,
-        "consistency_notes": ""
+        "consistency_notes": "Референс-аркуш — розворот (анфас/3-4/профіль) + 2 вирази обличчя, згенеровано з попереднього портрета-анфас як умову для збереження обличчя."
       },
-      "locked": false
+      "locked": false,
+      "voice_ids": {}
     },
     {
       "character_id": "CHAR_006",
@@ -130,14 +168,23 @@
         "default_outfit": "легка броня охоронця каравану"
       },
       "personality_visual_cues": "стриманий, відповідальний командир охорони каравану роду Тенебрис",
-      "voice_id": "",
       "reference_sheet_path": "characters/CHAR_006/reference.png",
+      "appearance_states": [
+        {
+          "state_id": "v1",
+          "description": "базовий вигляд — легка броня охоронця каравану, маска",
+          "valid_from_scene": "SCENE_093",
+          "reference_sheet_path": "characters/CHAR_006/reference.png",
+          "locked": false
+        }
+      ],
       "generator_notes": {
         "preferred_model": "claude-mcp-media",
         "reference_image_count": 5,
-        "consistency_notes": ""
+        "consistency_notes": "Референс-аркуш — розворот (анфас/3-4/профіль) + 2 пози, згенеровано з попереднього портрета-анфас як умову для збереження ідентичності персонажа."
       },
-      "locked": false
+      "locked": false,
+      "voice_ids": {}
     }
   ]
 }

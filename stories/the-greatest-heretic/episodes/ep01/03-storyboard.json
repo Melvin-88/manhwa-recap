@@ -2,12 +2,12 @@
   "episode_id": "ep01",
   "shots": [
     {"shot_id": "SHOT_001", "scene_id": "SCENE_001", "camera_id": "CAM_CLOSEUP", "composition_goal": "Обличчя Дарена в момент пробудження — очі широко розплющені, судомний вдих", "pacing_note": "різкий, раптовий", "characters_in_frame": ["CHAR_001"]},
-    {"shot_id": "SHOT_002", "scene_id": "SCENE_001", "camera_id": "CAM_WIDE", "composition_goal": "Очі звикають до темряви — поступово проявляються силуети інших бранців навколо", "pacing_note": "повільний, наростаючий", "characters_in_frame": ["CHAR_001"]},
+    {"shot_id": "SHOT_002", "scene_id": "SCENE_002", "camera_id": "CAM_WIDE", "composition_goal": "Очі звикають до темряви — поступово проявляються силуети інших бранців навколо", "pacing_note": "повільний, наростаючий", "characters_in_frame": ["CHAR_001"]},
 
-    {"shot_id": "SHOT_003", "scene_id": "SCENE_002", "camera_id": "CAM_LOW_ANGLE", "composition_goal": "Рогатий охоронець нависає над бранцями, підкреслюючи його загрозливість", "pacing_note": "різкий, тривожний", "characters_in_frame": ["CHAR_001"]},
-    {"shot_id": "SHOT_004", "scene_id": "SCENE_002", "camera_id": "CAM_MEDIUM", "composition_goal": "Дарена змушують зняти одяг і вдягнути лахміття мертвого в'язня", "pacing_note": "повільний, принизливий", "characters_in_frame": ["CHAR_001"]},
+    {"shot_id": "SHOT_003", "scene_id": "SCENE_003", "camera_id": "CAM_LOW_ANGLE", "composition_goal": "Рогатий охоронець нависає над бранцями, підкреслюючи його загрозливість", "pacing_note": "різкий, тривожний", "characters_in_frame": ["CHAR_001"]},
+    {"shot_id": "SHOT_004", "scene_id": "SCENE_004", "camera_id": "CAM_MEDIUM", "composition_goal": "Дарена змушують зняти одяг і вдягнути лахміття мертвого в'язня", "pacing_note": "повільний, принизливий", "characters_in_frame": ["CHAR_001"]},
 
-    {"shot_id": "SHOT_005", "scene_id": "SCENE_003", "camera_id": "CAM_TRACKING", "composition_goal": "Колона бранців рухається кам'яними коридорами, приєднуються нові групи", "pacing_note": "рівномірний, гнітючий", "characters_in_frame": ["CHAR_001"]},
+    {"shot_id": "SHOT_005", "scene_id": "SCENE_005", "camera_id": "CAM_TRACKING", "composition_goal": "Колона бранців рухається кам'яними коридорами, приєднуються нові групи", "pacing_note": "рівномірний, гнітючий", "characters_in_frame": ["CHAR_001"]},
     {"shot_id": "SHOT_006", "scene_id": "SCENE_003", "camera_id": "CAM_AERIAL", "composition_goal": "Розкрити масштаб велетенської кільцевої шахти зверху", "pacing_note": "повільний, приголомшливий", "characters_in_frame": ["CHAR_001"]},
 
     {"shot_id": "SHOT_007", "scene_id": "SCENE_004", "camera_id": "CAM_MEDIUM", "composition_goal": "Жорстоке покарання в'язня за приховану знахідку", "pacing_note": "різкий, жорстокий", "characters_in_frame": []},

@@ -7,6 +7,7 @@
 - `story_slug` (наприклад `the-greatest-heretic`) — визначає, з яким фолдером `stories/<story_slug>/` працює весь виклик
 - `episode_id` (наприклад `ep02`)
 - `stories/<story_slug>/episodes/<episode_id>/script.md` — редакційний бриф: URL(и) джерела, обсяг епізоду, свідомі зміни
+- `stories/<story_slug>/story-config.json` (`languages`, `default_language`) — список мов, для яких аудіо-гілка й Assembly мають прогонятись; якщо файл відсутній, вважати `languages: ["uk"]`
 
 Усі шляхи файлів нижче (`episodes/...`, `registries/...`, `characters/...`, `source-material/...`) — відносні до кореня `stories/<story_slug>/`, а не кореня репозиторію. Див. `docs/architecture.md`, розділ "Структура для кількох історій".
 
@@ -24,10 +25,12 @@
 4. Паралельно (незалежні гілки, можна виконувати в будь-якому порядку):
    - **Візуальна гілка**: Scene Intelligence Engine → `02-scene-intelligence.json` → Storyboard Planner → `03-storyboard.json` (виклик Registry Builder on-demand, якщо з'являються нові локації/пропси) → Visual Shot Package → `04-visual-shot-package.json` → Prompt Compiler → `05-prompt-package.json`
      → **ЧЕКПОІНТ 3**: показати список шотів і скомпільовані промпти, чекати підтвердження перед витратою викликів генерації
-     → Image Director → `06-generation-log.json` (позначає `flagged_for_review` замість мовчазної генерації)
-   - **Аудіо гілка**: Narrator/Audio Director → `audio/02b-narration-script.json` → `audio/generation-log.json` (позначає `flagged_for_review` замість мовчазної генерації)
-5. **Assembly** (механічний скрипт, не LLM-виклик) → збирає `06-generation-log.json` + `audio/generation-log.json` у `episodes/<episode_id>/final/<episode_id>.mp4`
-   → **ЧЕКПОІНТ 5**: показати відео, чекати рішення про публікацію
+     → Image Director → `06-generation-log.json` (генерує й завантажує, `flagged_for_review` поки що тимчасове)
+     → Image QA → оновлює `06-generation-log.json` in place (судить кожен кадр, за потреби сам перегенеровує до 2 спроб, фінальне `flagged_for_review`)
+     → **ЧЕКПОІНТ 4**: лише якщо після Image QA лишились записи з `flagged_for_review: true` — показати їх і `qa_notes` людині, чекати рішення (ручне виправлення промпту чи прийняття як є); якщо таких записів немає — пропустити чекпоінт і йти далі автоматично
+   - **Аудіо гілка, окремо для кожної мови з `story-config.json.languages`**: Narrator/Audio Director → `audio/<lang>/02b-narration-script.json` → `audio/<lang>/generation-log.json` (позначає `flagged_for_review` замість мовчазної генерації). Візуальна гілка (кадри) спільна для всіх мов і генерується лише один раз.
+5. **Assembly, окремо для кожної мови** (механічний скрипт `scripts/assemble_episode.py --lang <lang>`, не LLM-виклик) → групує кадри `06-generation-log.json` по `scene_id` (через `03-storyboard.json`), для кожної сцени ділить тривалість відповідного аудіо з `audio/<lang>/generation-log.json` порівну між її кадрами, рендерить кожен кадр окремим відеокліпом (легкий Ken Burns zoom, аудіо змонтоване під нього) і склеює всі кліпи в `episodes/<episode_id>/final/<episode_id>_<lang>.mp4`. Пропускає будь-який запис із `flagged_for_review: true` (кадр чи аудіо) — не збирає відео з невиправленим браком мовчки. Кожна мова — повністю окремий експортований файл, не multi-track доріжки в одному відео.
+   → **ЧЕКПОІНТ 5**: показати відео(а), чекати рішення про публікацію
 
 ## Rules
 - Кожен крок читає лише файл(и), явно перелічені в `Input` відповідного skill — ніколи не "згадує" дані з попередньої розмови в обхід файлу.

@@ -1,0 +1,5 @@
+{
+  "_schema_note": "Конфігурація рівня історії (не епізоду). Наратор/Audio Director і Assembly читають languages, щоб знати, для яких мов генерувати текст/аудіо/фінальне відео. Додавання нової мови: додати код у languages, заповнити voice_ids[код] для кожного персонажа в character-registry.json, запустити Narrator/Audio Director і Assembly для цієї мови — жодних змін схеми не потрібно.",
+  "languages": ["uk"],
+  "default_language": "uk"
+}
