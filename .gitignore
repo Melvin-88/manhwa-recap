@@ -18,31 +18,11 @@ npm-debug.log*
 # Logs
 *.log
 
-# Generated media (AI-generated images/audio/video output)
-# За замовчуванням ігноруємо великі медіафайли, АЛЕ канонічні матеріали
-# історії (референс-аркуші персонажів + фінальні згенеровані кадри епізодів)
-# зберігаємо в репозиторії навмисно — див. docs/architecture.md "Структура для кількох історій".
-*.mp4
-*.mp3
-*.wav
-*.png
-*.jpg
-*.jpeg
-!stories/**/characters/**/*.png
-!stories/**/characters/**/*.jpg
-!stories/**/characters/**/*.jpeg
-!stories/**/creatures/**/*.png
-!stories/**/creatures/**/*.jpg
-!stories/**/creatures/**/*.jpeg
-!stories/**/props/**/*.png
-!stories/**/props/**/*.jpg
-!stories/**/props/**/*.jpeg
-!stories/**/episodes/**/generated/**/*.png
-!stories/**/episodes/**/generated/**/*.jpg
-!stories/**/episodes/**/generated/**/*.jpeg
-!stories/**/episodes/**/audio/**/*.mp3
-!stories/**/episodes/**/audio/**/*.wav
-!stories/**/episodes/**/final/**/*.mp4
+# Story data (registries, episodes, generated media, source-material).
+# Репозиторій зберігає лише story-agnostic архітектуру пайплайну (skills/,
+# scripts/, docs/) — конкретні історії це робочі дані, що лишаються локально
+# й не потрапляють у git. Див. docs/architecture.md "Структура для кількох історій".
+stories/
 
 # Temp
 tmp/

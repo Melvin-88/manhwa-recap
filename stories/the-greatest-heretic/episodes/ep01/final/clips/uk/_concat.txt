@@ -1,5 +1,0 @@
-file '/Users/roman_fedchenko/Documents/Projects/manhwa-recap/stories/the-greatest-heretic/episodes/ep01/final/clips/uk/SHOT_001.mp4'
-file '/Users/roman_fedchenko/Documents/Projects/manhwa-recap/stories/the-greatest-heretic/episodes/ep01/final/clips/uk/SHOT_002.mp4'
-file '/Users/roman_fedchenko/Documents/Projects/manhwa-recap/stories/the-greatest-heretic/episodes/ep01/final/clips/uk/SHOT_003.mp4'
-file '/Users/roman_fedchenko/Documents/Projects/manhwa-recap/stories/the-greatest-heretic/episodes/ep01/final/clips/uk/SHOT_004.mp4'
-file '/Users/roman_fedchenko/Documents/Projects/manhwa-recap/stories/the-greatest-heretic/episodes/ep01/final/clips/uk/SHOT_005.mp4'
