@@ -1,10 +1,10 @@
 # Skill: Master Narrative
 
 ## Purpose
-Перетворює структуровані факти від Source Ingestion у структурований наратив власною прозою. Джерело істини для всіх наступних етапів пайплайну. Момент трансформації/стиснення історії — не Source Ingestion.
+Turns Source Ingestion's structured facts into a structured narrative in its own prose. The source of truth for every later pipeline stage. This is where the story's transformation/compression happens — not Source Ingestion.
 
 ## Input
-`00-source-extract.json` від Source Ingestion (факти: персонажі, world_facts, plot_beats, adaptation_notes) + `script.md` (редакційний бриф людини: обсяг епізоду, свідомі зміни)
+`00-source-extract.json` from Source Ingestion (facts: characters, world_facts, plot_beats, adaptation_notes) + `script.md` (the human's editorial brief: episode scope, deliberate changes)
 
 ## Output
 `01-master-narrative.json`:
@@ -24,9 +24,9 @@
 ```
 
 ## Rules
-- Ніколи не визначає візуал (це відповідальність Storyboard Planner/Visual Shot Package).
-- Пише власну прозу на основі фактів з `00-source-extract.json` — не перефразовує оригінальний текст джерела, бо його в файлі й немає (лише факти).
-- Кожна сцена — окрема одиниця, придатна для подальшої обробки Scene Intelligence Engine.
+- Never defines visuals (that's Storyboard Planner's/Visual Shot Package's responsibility).
+- Writes its own prose based on the facts in `00-source-extract.json` — doesn't paraphrase the original source text, because that text isn't in the file at all (only facts are).
+- Each scene is a standalone unit, ready for further processing by Scene Intelligence Engine.
 
-## Example invocation (концептуально)
-"Ось факти з 00-source-extract.json для епізоду 1: [JSON]. Побудуй Master Narrative у форматі 01-master-narrative.json зі сценами."
+## Example Invocation (conceptual)
+"Here are the facts from 00-source-extract.json for episode 1: [JSON]. Build a Master Narrative in the 01-master-narrative.json format with scenes."

@@ -1,10 +1,10 @@
 # Skill: Scene Intelligence Engine
 
 ## Purpose
-Аналізує кожну сцену з Master Narrative і витягує глибші структурні дані, потрібні для storyboard.
+Analyzes each scene from Master Narrative and extracts the deeper structural data the storyboard needs.
 
 ## Input
-Одна сцена з `01-master-narrative.json`
+One scene from `01-master-narrative.json`
 
 ## Output
 `02-scene-intelligence.json`:
@@ -26,5 +26,5 @@
 ```
 
 ## Rules
-- Спирається лише на дані з Master Narrative та реєстрів, нічого не вигадує.
-- Не визначає композицію кадру (це Storyboard Planner).
+- Relies only on data from Master Narrative and the registries — invents nothing.
+- Doesn't define shot composition (that's Storyboard Planner's job).

@@ -1,13 +1,13 @@
 # Skill: Registry Builder
 
 ## Purpose
-Підтримує та оновлює незмінні (у межах епізоду) реєстри: Character, Location, Prop, Camera, Palette, Style. Єдине джерело істини для всіх візуальних сутностей проєкту.
+Creates and updates the registries that stay immutable within an episode: Character, Location, Prop, Camera, Palette, Style. The single source of truth for every visual entity in the project.
 
 ## Input
-Запит на створення/оновлення запису в одному з реєстрів `registries/*.json`. Викликається на вимогу (не послідовний етап): вперше одразу після Source Ingestion (нові персонажи з `source_name`/`adapted_name`), повторно під час Storyboard Planner, якщо з'являються нові локації/пропси.
+A request to create/update an entry in one of the `registries/*.json` files. Called on demand (not a sequential stage): first right after Source Ingestion (new characters with `source_name`/`adapted_name`), again during Storyboard Planner whenever new locations/props appear.
 
 ## Output
-Оновлений відповідний JSON-файл реєстру. Приклад для нового персонажа з Source Ingestion:
+The relevant registry JSON file, updated. Example for a new character coming from Source Ingestion:
 ```json
 {
   "character_id": "CHAR_002",
@@ -21,7 +21,7 @@
   "appearance_states": [
     {
       "state_id": "v1",
-      "description": "базовий вигляд / стартове вбрання",
+      "description": "base appearance / starting outfit",
       "valid_from_scene": "SCENE_001",
       "reference_sheet_path": "characters/CHAR_002/reference_v1.png",
       "locked": false
@@ -33,16 +33,16 @@
 ```
 
 ## Rules
-- Ніколи не змінює існуючий `locked:true` запис без явного підтвердження людини.
-- **Нові персонажі отримують reference-аркуш ДО того, як з'являються в будь-якому сюжетному кадрі.** Registry Builder викликає Image Director окремо, щоб згенерувати 1 канонічне референс-зображення персонажа (модель `character_reference_model` зі `style-registry.json`, наразі `nano_banana_pro`) на основі полів `appearance`. Image Director завантажує фактичний файл у `characters/CHAR_NNN/reference_vN.png` (у фолдері історії, не тимчасовий URL) — саме цей локальний шлях записується і в `appearance_states[].reference_sheet_path`, і (для поточної/останньої версії) в топлевельний `reference_sheet_path`. Лише після цього персонажа можна `locked:true`, і лише після цього Storyboard/Prompt Compiler можуть використовувати цього персонажа в кадрах.
-- **Референс-аркуш — це "розворот" персонажа, не один портрет анфас.** Одне зображення має містити кілька ракурсів (анфас, 3/4, профіль; за потреби — спина) і 2-3 вирази обличчя в межах одного канонічного вбрання. Причина: генератор, побачивши персонажа лише спереду, вигадує довільні деталі (напр. хвостик волосся), коли кадр вимагає виду збоку/ззаду — розворот усуває цю плутанину. Орієнтир якості — вже згенерований `characters/CHAR_003/reference.png`.
-- **Версії вигляду (`appearance_states`):** коли сюжет незворотно змінює вигляд персонажа (новий одяг, нова зброя, поранення, трансформація) — а не тимчасова деталь одного кадру — Registry Builder додає новий запис в `appearance_states` з новим `state_id`, `valid_from_scene` (перша сцена, де діє ця зміна) і власним референс-аркушем (той самий формат розвороту, той самий базовий вигляд обличчя/раси персонажа, оновлене вбрання/деталі). Сигнал для нової версії — поле `continuity_requirements` у `02-scene-intelligence.json`, коли там зазначено "з цієї сцени і надалі..." (напр. зміна одягу після втечі з шахти). Стара версія лишається в масиві (не видаляється) — вона потрібна для кадрів із попередніх сцен.
-- Кожен реєстр — окремий файл, не змішувати типи сутностей в одному файлі.
-- Записи персонажів, створені з Source Ingestion, обов'язково заповнюють `source_name` для трасування адаптації (ніколи не виводиться в публічний контент).
-- `adapted_name` від Source Ingestion стає полем `name` у реєстрі; `source_name` копіюється як є.
+- Never modifies an existing `locked:true` entry without explicit human confirmation.
+- **New characters get a reference sheet BEFORE they appear in any story shot.** Registry Builder calls Image Director separately to generate 1 canonical character reference image (the `character_reference_model` from `style-registry.json`) based on the `appearance` fields. Image Director downloads the actual file to `characters/CHAR_NNN/reference_vN.png` (inside the story's folder, never a temporary URL) — this local path is what gets recorded both in `appearance_states[].reference_sheet_path` and, for the current/latest version, in the top-level `reference_sheet_path`. Only after this can the character be set `locked:true`, and only then can Storyboard/Prompt Compiler use this character in shots.
+- **A reference sheet is a character "turnaround," never a single front-facing portrait.** One image must contain several angles (front, 3/4, profile; back if needed) and 2-3 facial expressions within one canonical outfit. Rationale: given only a front view, the generator invents arbitrary details (e.g. a ponytail) whenever a shot calls for a side/back view — a turnaround removes that ambiguity.
+- **Appearance versions (`appearance_states`):** when the story irreversibly changes a character's appearance (new clothing, a new weapon, an injury, a transformation) — as opposed to a one-shot temporary detail — Registry Builder adds a new entry to `appearance_states` with a new `state_id`, `valid_from_scene` (the first scene where the change applies), and its own reference sheet (same turnaround format, same underlying face/build, updated outfit/detail). The signal for a new version is the `continuity_requirements` field in `02-scene-intelligence.json` whenever it states something like "from this scene onward..." (e.g. a clothing change after an escape). The old version stays in the array (never deleted) — it's still needed for shots from earlier scenes.
+- Each registry is its own file — never mix entity types in one file.
+- Character entries created from Source Ingestion must populate `source_name` for adaptation traceability (never surfaced in public-facing content).
+- Source Ingestion's `adapted_name` becomes the registry's `name` field; `source_name` is copied as-is.
 
 ## Creature Registry (`registries/creature-registry.json`)
-Окремий реєстр для нелюдських істот/монстрів, що не є персонажами (не мають `voice_id`, не ведуть діалогів), але з'являються в кадрах.
+A separate registry for non-human creatures/monsters that aren't characters (no `voice_id`, no dialogue) but appear in shots.
 ```json
 {
   "creatures": [
@@ -58,9 +58,9 @@
   ]
 }
 ```
-- **Референс-аркуш генерується ЛИШЕ якщо `recurring: true`** — істота з'являється в ≥2 шотах сторіборду. Одноразовий фоновий монстр (`recurring: false`) референсу не потребує — генерується довільно щоразу, це не впливає на консистентність, бо повторного кадру з ним не буде.
-- `recurring` визначається під час Storyboard Planner: якщо однакова істота (за описом сцени) фігурує в кількох `shot_id`, Storyboard Planner викликає Registry Builder для реєстрації/позначення `recurring: true`.
-- Формат референс-аркуша — той самий "розворот" (кілька ракурсів), що й для персонажів.
+- **A reference sheet is generated ONLY if `recurring: true`** — the creature appears in ≥2 storyboard shots. A one-off background monster (`recurring: false`) needs no reference — it's generated freely each time, since there's no repeat appearance for consistency to matter.
+- `recurring` is determined during Storyboard Planner: if the same creature (per the scene description) shows up across multiple `shot_id`s, Storyboard Planner calls Registry Builder to register it / flag it `recurring: true`.
+- The reference-sheet format is the same "turnaround" (multiple angles) used for characters.
 
-## Reference-зображення для предметів (`registries/prop-registry.json`)
-- Поле `reference_image_path` (опційне) заповнюється так само, лише якщо предмет: (а) з'являється в ≥2 шотах, і (б) достатньо візуально своєрідний, щоб плутанина між кадрами була б помітною (зброя, унікальний артефакт). Типовий фоновий реквізит референсу не потребує.
+## Reference Images for Props (`registries/prop-registry.json`)
+- The (optional) `reference_image_path` field is populated the same way, only when the prop: (a) appears in ≥2 shots, and (b) is visually distinctive enough that cross-shot inconsistency would be noticeable (a weapon, a unique artifact). Typical background props need no reference.

@@ -2,36 +2,36 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Реалізувати архітектуру пайплайну з `docs/superpowers/specs/2026-07-11-pipeline-architecture-design.md`: додати нові skill-агенти (Source Ingestion, Narrator/Audio Director, Produce Episode), оновити існуючі `SKILL.md` з конкретними output-схемами, оновити реєстри, перескласти шаблон `episodes/ep01/` за новою нумерацією файлів, синхронізувати `docs/architecture.md` і `README.md`.
+**Goal:** Implement the pipeline architecture from `docs/superpowers/specs/2026-07-11-pipeline-architecture-design.md`: add new skill agents (Source Ingestion, Narrator/Audio Director, Produce Episode), update existing `SKILL.md` files with concrete output schemas, update the registries, restructure the `episodes/ep01/` template under the new file-numbering scheme, and sync `docs/architecture.md` and `README.md`.
 
-**Architecture:** Це репозиторій специфікацій (Markdown/JSON), не виконуваний код — тут немає юніт-тестів у традиційному сенсі. "Тест" кожного кроку — це (а) валідність JSON через `python3 -m json.tool`, (б) наявність обов'язкових секцій/полів через `grep`. Кожен файл редагується повністю (файли короткі, 15-40 рядків), тому кроки дають повний новий вміст файлу, а не diff-патчі.
+**Architecture:** This is a specification repository (Markdown/JSON), not executable code — there are no unit tests in the traditional sense here. Each step's "test" is (a) JSON validity via `python3 -m json.tool`, (b) the presence of required sections/fields via `grep`. Every file is edited in full (files are short, 15-40 lines), so steps provide the complete new file content rather than diff patches.
 
-**Tech Stack:** Markdown, JSON, `python3` (лише для валідації JSON, вже є в системі), `grep`.
+**Tech Stack:** Markdown, JSON, `python3` (only for JSON validation, already available on the system), `grep`.
 
 ## Global Constraints
 
-- Оригінальний текст джерела (веб-новела/манхва) ніколи не зберігається дослівно в жодному файлі репозиторію — тільки факти власними словами (з дизайн-спеку, розділ "Source Ingestion").
-- Кожен реєстр (`registries/*.json`) — окремий файл, типи сутностей не змішуються.
-- `locked:true` записи в реєстрах ніколи не змінюються без явного підтвердження людини — це правило вже існує в `skills/registry-builder/SKILL.md` і має зберегтись у всіх редакціях.
-- Нумерація файлів епізоду фіксована: `00-source-extract.json` → `01-master-narrative.json` → `02-scene-intelligence.json` / `02b-narration-script.json` → `03-storyboard.json` → `04-visual-shot-package.json` → `05-prompt-package.json` → `06-generation-log.json` → `final/<episode_id>.mp4`.
-- Генератор для пілоту — `generation_backend: "claude-mcp-media"` (вбудовані MCP-інструменти), `fallback_model` лишається задокументованою неактивною альтернативою.
+- The original source text (web novel/manhwa) is never stored verbatim in any repository file — only facts in original wording (from the design spec, section "Source Ingestion").
+- Every registry (`registries/*.json`) is its own file; entity types are never mixed.
+- `locked:true` registry entries are never changed without explicit human confirmation — this rule already exists in `skills/registry-builder/SKILL.md` and must be preserved across all edits.
+- Episode file numbering is fixed: `00-source-extract.json` → `01-master-narrative.json` → `02-scene-intelligence.json` / `02b-narration-script.json` → `03-storyboard.json` → `04-visual-shot-package.json` → `05-prompt-package.json` → `06-generation-log.json` → `final/<episode_id>.mp4`.
+- The generator for the pilot is `generation_backend: "claude-mcp-media"` (built-in MCP tools); `fallback_model` stays a documented, inactive alternative.
 
 ---
 
-## Task 1: Оновити реєстри (character-registry, style-registry)
+## Task 1: Update Registries (character-registry, style-registry)
 
 **Files:**
-- Modify: `registries/character-registry.json` (весь файл)
-- Modify: `registries/style-registry.json` (весь файл)
+- Modify: `registries/character-registry.json` (whole file)
+- Modify: `registries/style-registry.json` (whole file)
 
 **Interfaces:**
-- Produces: поле `voice_id` (замінює `voice_id_elevenlabs`) та `source_name` в `character-registry.json`; поле `generation_backend` (замінює `generator_config.primary_model`) в `style-registry.json`. Усі наступні задачі, що згадують ці поля, посилаються саме на ці назви.
+- Produces: the `voice_id` field (replacing `voice_id_elevenlabs`) and `source_name` in `character-registry.json`; the `generation_backend` field (replacing `generator_config.primary_model`) in `style-registry.json`. Every later task that mentions these fields refers to exactly these names.
 
-- [ ] **Step 1: Переписати `registries/character-registry.json`**
+- [ ] **Step 1: Rewrite `registries/character-registry.json`**
 
 ```json
 {
-  "_schema_note": "Single Source of Truth для персонажів. Registry Builder читає/пише сюди. Prompt Compiler резолвить character_id в опис при побудові промпту. source_name трасує адаптацію з джерела (Source Ingestion) і ніколи не виводиться в публічний контент.",
+  "_schema_note": "Single Source of Truth for characters. Registry Builder reads/writes here. Prompt Compiler resolves character_id into a description when building a prompt. source_name traces the adaptation from the source (Source Ingestion) and is never surfaced in public-facing content.",
   "characters": [
     {
       "character_id": "CHAR_001",
@@ -60,11 +60,11 @@
 }
 ```
 
-- [ ] **Step 2: Переписати `registries/style-registry.json`**
+- [ ] **Step 2: Rewrite `registries/style-registry.json`**
 
 ```json
 {
-  "_schema_note": "Глобальний Style Preset проєкту. Один набір на серіал для візуальної консистентності між епізодами.",
+  "_schema_note": "The project's global Style Preset. One set per series for visual consistency across episodes.",
   "project_style": {
     "art_style": "",
     "line_weight": "",
@@ -73,18 +73,18 @@
     "generator_config": {
       "generation_backend": "claude-mcp-media",
       "fallback_model": "nano-banana-2",
-      "fallback_notes": "Задокументовано, але неактивно. Перехід на пряме API не вимагає змін у Prompt Compiler/Image Director, лише перемикання generation_backend."
+      "fallback_notes": "Documented but inactive. Switching to a direct API requires no changes to Prompt Compiler/Image Director, only flipping generation_backend."
     }
   }
 }
 ```
 
-- [ ] **Step 3: Валідація JSON**
+- [ ] **Step 3: Validate JSON**
 
 Run: `python3 -m json.tool registries/character-registry.json > /dev/null && python3 -m json.tool registries/style-registry.json > /dev/null && echo VALID`
 Expected: `VALID`
 
-- [ ] **Step 4: Перевірити, що старі назви полів зникли**
+- [ ] **Step 4: Verify the old field names are gone**
 
 Run: `grep -r "voice_id_elevenlabs\|primary_model.*nano-banana" registries/ || echo CLEAN`
 Expected: `CLEAN`
@@ -98,26 +98,26 @@ git commit -m "feat: update registry schemas for MCP generator and source adapta
 
 ---
 
-## Task 2: Новий skill — Source Ingestion
+## Task 2: New Skill — Source Ingestion
 
 **Files:**
 - Create: `skills/source-ingestion/SKILL.md`
 
 **Interfaces:**
-- Consumes: URL(и) джерела + `script.md` епізоду (редакційний бриф)
-- Produces: `00-source-extract.json` зі структурою `{episode_id, source_refs[], characters_extracted[], world_facts[], plot_beats[], adaptation_notes{renamed[], compressed[], changed[]}}` — Task 3/4/5a читають саме ці назви полів.
+- Consumes: source URL(s) + the episode's `script.md` (editorial brief)
+- Produces: `00-source-extract.json` with the shape `{episode_id, source_refs[], characters_extracted[], world_facts[], plot_beats[], adaptation_notes{renamed[], compressed[], changed[]}}` — Tasks 3/4/5a read exactly these field names.
 
-- [ ] **Step 1: Створити `skills/source-ingestion/SKILL.md`**
+- [ ] **Step 1: Create `skills/source-ingestion/SKILL.md`**
 
 ```markdown
 # Skill: Source Ingestion
 
 ## Purpose
-Перший етап пайплайну. Перетворює готовий розділ(и) джерела (веб-новела/манхва за URL) у структуровані факти — персонажів, світ, сюжетні події — без збереження оригінального тексту дослівно. Це і є момент, де починається трансформація/стиснення історії.
+The pipeline's first stage. Transforms one or more finished source chapters (a web novel/manhwa by URL) into structured facts — characters, world, plot events — without ever storing the original text verbatim. This is where the story's transformation/compression begins.
 
 ## Input
-- Одна або кілька URL-адрес розділів джерела, що покривають один епізод (за раз — один діапазон розділів, ніколи вся новела масово)
-- `script.md` епізоду з редакційним брифом (які свідомі зміни вносити)
+- One or more source-chapter URLs covering one episode (one range of chapters at a time, never the whole novel in bulk)
+- The episode's `script.md` with an editorial brief (which deliberate changes to make)
 
 ## Output
 `00-source-extract.json`:
@@ -148,20 +148,20 @@ git commit -m "feat: update registry schemas for MCP generator and source adapta
 ```
 
 ## Rules
-- **Оригінальний текст джерела ніколи не зберігається дослівно в жодному файлі репозиторію.** Вихід — факти й короткі власні формулювання, не перефразовані речення оригіналу.
-- Вихід має бути суттєво коротшим за джерело.
-- Обробляти по одному діапазону розділів за раз — не масовий скрейпінг усієї новели одним викликом.
-- Потребує можливості читання веб-сторінки (web fetch / browser tool залежно від агента, що виконує цей skill).
-- `adaptation_notes` обов'язкові й конкретні — це основа чекпоінта 0 (людина підтверджує достатність трансформації перед тим, як факти йдуть у Master Narrative).
-- Персонажі/локації з `characters_extracted` передаються в Registry Builder для створення unlocked-записів із `source_name` та `adapted_name`.
+- **The original source text is never stored verbatim in any repository file.** The output is facts and short original phrasing, not paraphrased sentences that track the original.
+- The output must be substantially shorter than the source.
+- Process one chapter range at a time — never bulk-scrape an entire novel in one call.
+- Requires the ability to read a web page (web fetch / browser tool, depending on which agent runs this skill).
+- `adaptation_notes` are mandatory and specific — this is the basis for checkpoint 0 (the human confirms the transformation is sufficient before the facts flow into Master Narrative).
+- Characters/locations from `characters_extracted` are handed to Registry Builder to create unlocked entries with `source_name` and `adapted_name`.
 ```
 
-- [ ] **Step 2: Перевірити наявність обов'язкових секцій**
+- [ ] **Step 2: Verify the required sections are present**
 
 Run: `grep -c "^## Purpose\|^## Input\|^## Output\|^## Rules" skills/source-ingestion/SKILL.md`
 Expected: `4`
 
-- [ ] **Step 3: Витягти і валідувати JSON-приклад зі схемою**
+- [ ] **Step 3: Extract and validate the JSON schema example**
 
 Run: `sed -n '/```json/,/```/p' skills/source-ingestion/SKILL.md | sed '1d;$d' | python3 -m json.tool > /dev/null && echo VALID`
 Expected: `VALID`
@@ -175,26 +175,26 @@ git commit -m "feat: add Source Ingestion skill"
 
 ---
 
-## Task 3: Новий skill — Narrator / Audio Director
+## Task 3: New Skill — Narrator / Audio Director
 
 **Files:**
 - Create: `skills/narrator-audio-director/SKILL.md`
 
 **Interfaces:**
-- Consumes: сцени з `01-master-narrative.json` (поля `scene_id`, `summary`, `emotional_beat`) + `voice_id` з `registries/character-registry.json` (з Task 1)
-- Produces: `audio/02b-narration-script.json` і `audio/generation-log.json`
+- Consumes: scenes from `01-master-narrative.json` (fields `scene_id`, `summary`, `emotional_beat`) + `voice_id` from `registries/character-registry.json` (from Task 1)
+- Produces: `audio/02b-narration-script.json` and `audio/generation-log.json`
 
-- [ ] **Step 1: Створити `skills/narrator-audio-director/SKILL.md`**
+- [ ] **Step 1: Create `skills/narrator-audio-director/SKILL.md`**
 
 ```markdown
 # Skill: Narrator / Audio Director
 
 ## Purpose
-Паралельна аудіо-гілка пайплайну. Перетворює сцени з Master Narrative у наративний/діалоговий текст і генерує озвучення, використовуючи закріплені voice_id персонажів. Не залежить від Storyboard/Visual Shot Package — стартує одразу після Master Narrative.
+The pipeline's parallel audio branch. Turns Master Narrative scenes into narration/dialogue text and generates voice, using each character's locked voice_id. Independent of Storyboard/Visual Shot Package — starts right after Master Narrative.
 
 ## Input
-- Сцени з `01-master-narrative.json` (`scene_id`, `summary`, `emotional_beat`)
-- `voice_id` кожного присутнього персонажа з `registries/character-registry.json`
+- Scenes from `01-master-narrative.json` (`scene_id`, `summary`, `emotional_beat`)
+- Each present character's `voice_id` from `registries/character-registry.json`
 
 ## Output
 `audio/02b-narration-script.json`:
@@ -224,17 +224,17 @@ git commit -m "feat: add Source Ingestion skill"
 ```
 
 ## Rules
-- `voice_id` створюється один раз на персонажа (кешується в `character-registry.json`), не перегенеровується щоразу.
-- Якщо емоційний тон сцени суттєво розходиться з попереднім використанням голосу цього персонажа — позначає `flagged_for_review: true`, не генерує мовчки (за аналогією з правилом Image Director).
-- Не визначає візуал і не залежить від шотів — паралельна гілка, не послідовний крок після Storyboard Planner.
+- `voice_id` is created once per character (cached in `character-registry.json`), never regenerated on every call.
+- If a scene's emotional tone diverges significantly from that character's previous voice usage, flags `flagged_for_review: true` rather than generating silently (by analogy with the Image Director rule).
+- Doesn't define visuals and doesn't depend on shots — it's a parallel branch, not a sequential step after Storyboard Planner.
 ```
 
-- [ ] **Step 2: Перевірити наявність обов'язкових секцій**
+- [ ] **Step 2: Verify the required sections are present**
 
 Run: `grep -c "^## Purpose\|^## Input\|^## Output\|^## Rules" skills/narrator-audio-director/SKILL.md`
 Expected: `4`
 
-- [ ] **Step 3: Валідувати обидва JSON-приклади**
+- [ ] **Step 3: Validate both JSON examples**
 
 Run:
 ```bash
@@ -259,28 +259,28 @@ git commit -m "feat: add Narrator/Audio Director skill"
 
 ---
 
-## Task 4: Оновити Registry Builder
+## Task 4: Update Registry Builder
 
 **Files:**
-- Modify: `skills/registry-builder/SKILL.md` (весь файл)
+- Modify: `skills/registry-builder/SKILL.md` (whole file)
 
 **Interfaces:**
-- Consumes: `source_name`/`adapted_name` від Source Ingestion (Task 2), поля `character-registry.json` з Task 1
-- Produces: без змін до зовнішнього контракту — уточнює тригер виклику (on-demand, вперше після Source Ingestion)
+- Consumes: `source_name`/`adapted_name` from Source Ingestion (Task 2), fields from `character-registry.json` (Task 1)
+- Produces: no change to the external contract — clarifies the invocation trigger (on-demand, first right after Source Ingestion)
 
-- [ ] **Step 1: Переписати `skills/registry-builder/SKILL.md`**
+- [ ] **Step 1: Rewrite `skills/registry-builder/SKILL.md`**
 
 ```markdown
 # Skill: Registry Builder
 
 ## Purpose
-Підтримує та оновлює незмінні (у межах епізоду) реєстри: Character, Location, Prop, Camera, Palette, Style. Єдине джерело істини для всіх візуальних сутностей проєкту.
+Creates and updates the registries that stay immutable within an episode: Character, Location, Prop, Camera, Palette, Style. The single source of truth for every visual entity in the project.
 
 ## Input
-Запит на створення/оновлення запису в одному з реєстрів `registries/*.json`. Викликається на вимогу (не послідовний етап): вперше одразу після Source Ingestion (нові персонажі з `source_name`/`adapted_name`), повторно під час Storyboard Planner, якщо з'являються нові локації/пропси.
+A request to create/update an entry in one of the `registries/*.json` files. Called on demand (not a sequential stage): first right after Source Ingestion (new characters with `source_name`/`adapted_name`), again during Storyboard Planner whenever new locations/props appear.
 
 ## Output
-Оновлений відповідний JSON-файл реєстру. Приклад для нового персонажа з Source Ingestion:
+The relevant registry JSON file, updated. Example for a new character coming from Source Ingestion:
 ```json
 {
   "character_id": "CHAR_002",
@@ -297,18 +297,18 @@ git commit -m "feat: add Narrator/Audio Director skill"
 ```
 
 ## Rules
-- Ніколи не змінює існуючий `locked:true` запис без явного підтвердження людини.
-- Нові персонажі/локації отримують character sheet / reference image перед тим, як `locked:true`.
-- Кожен реєстр — окремий файл, не змішувати типи сутностей в одному файлі.
-- Записи персонажів, створені з Source Ingestion, обов'язково заповнюють `source_name` для трасування адаптації (ніколи не виводиться в публічний контент).
+- Never modifies an existing `locked:true` entry without explicit human confirmation.
+- New characters/locations get a character sheet / reference image before being set `locked:true`.
+- Each registry is its own file — never mix entity types in one file.
+- Character entries created from Source Ingestion must populate `source_name` for adaptation traceability (never surfaced in public-facing content).
 ```
 
-- [ ] **Step 2: Перевірити, що правило про `locked:true` збереглось**
+- [ ] **Step 2: Verify the `locked:true` rule survived**
 
 Run: `grep -q "locked:true" skills/registry-builder/SKILL.md && echo OK`
 Expected: `OK`
 
-- [ ] **Step 3: Валідувати JSON-приклад**
+- [ ] **Step 3: Validate the JSON example**
 
 Run: `sed -n '/```json/,/```/p' skills/registry-builder/SKILL.md | sed '1d;$d' | python3 -m json.tool > /dev/null && echo VALID`
 Expected: `VALID`
@@ -322,27 +322,27 @@ git commit -m "docs: clarify Registry Builder on-demand trigger from Source Inge
 
 ---
 
-## Task 5a: Оновити Master Narrative, Scene Intelligence Engine, Storyboard Planner
+## Task 5a: Update Master Narrative, Scene Intelligence Engine, Storyboard Planner
 
 **Files:**
-- Modify: `skills/master-narrative/SKILL.md` (весь файл)
-- Modify: `skills/scene-intelligence-engine/SKILL.md` (весь файл)
-- Modify: `skills/storyboard-planner/SKILL.md` (весь файл)
+- Modify: `skills/master-narrative/SKILL.md` (whole file)
+- Modify: `skills/scene-intelligence-engine/SKILL.md` (whole file)
+- Modify: `skills/storyboard-planner/SKILL.md` (whole file)
 
 **Interfaces:**
 - Consumes: `00-source-extract.json` (Task 2)
-- Produces: `01-master-narrative.json`, `02-scene-intelligence.json`, `03-storyboard.json` — Task 5b і Task 6 посилаються на ці назви файлів і поля `scene_id`, `shot_id`, `camera_id`.
+- Produces: `01-master-narrative.json`, `02-scene-intelligence.json`, `03-storyboard.json` — Tasks 5b and 6 reference these file names and the fields `scene_id`, `shot_id`, `camera_id`.
 
-- [ ] **Step 1: Переписати `skills/master-narrative/SKILL.md`**
+- [ ] **Step 1: Rewrite `skills/master-narrative/SKILL.md`**
 
 ```markdown
 # Skill: Master Narrative
 
 ## Purpose
-Перетворює структуровані факти від Source Ingestion у структурований наратив власною прозою. Джерело істини для всіх наступних етапів пайплайну. Момент трансформації/стиснення історії — не Source Ingestion.
+Turns Source Ingestion's structured facts into a structured narrative in its own prose. The source of truth for every later pipeline stage. This is where the story's transformation/compression happens — not Source Ingestion.
 
 ## Input
-`00-source-extract.json` від Source Ingestion (факти: персонажі, world_facts, plot_beats, adaptation_notes) + `script.md` (редакційний бриф людини: обсяг епізоду, свідомі зміни)
+`00-source-extract.json` from Source Ingestion (facts: characters, world_facts, plot_beats, adaptation_notes) + `script.md` (the human's editorial brief: episode scope, deliberate changes)
 
 ## Output
 `01-master-narrative.json`:
@@ -362,24 +362,24 @@ git commit -m "docs: clarify Registry Builder on-demand trigger from Source Inge
 ```
 
 ## Rules
-- Ніколи не визначає візуал (це відповідальність Storyboard Planner/Visual Shot Package).
-- Пише власну прозу на основі фактів з `00-source-extract.json` — не перефразовує оригінальний текст джерела, бо його в файлі й немає (лише факти).
-- Кожна сцена — окрема одиниця, придатна для подальшої обробки Scene Intelligence Engine.
+- Never defines visuals (that's Storyboard Planner's/Visual Shot Package's responsibility).
+- Writes its own prose based on the facts in `00-source-extract.json` — doesn't paraphrase the original source text, because that text isn't in the file at all (only facts are).
+- Each scene is a standalone unit, ready for further processing by Scene Intelligence Engine.
 
-## Example invocation (концептуально)
-"Ось факти з 00-source-extract.json для епізоду 1: [JSON]. Побудуй Master Narrative у форматі 01-master-narrative.json зі сценами."
+## Example Invocation (conceptual)
+"Here are the facts from 00-source-extract.json for episode 1: [JSON]. Build a Master Narrative in the 01-master-narrative.json format with scenes."
 ```
 
-- [ ] **Step 2: Переписати `skills/scene-intelligence-engine/SKILL.md`**
+- [ ] **Step 2: Rewrite `skills/scene-intelligence-engine/SKILL.md`**
 
 ```markdown
 # Skill: Scene Intelligence Engine
 
 ## Purpose
-Аналізує кожну сцену з Master Narrative і витягує глибші структурні дані, потрібні для storyboard.
+Analyzes each scene from Master Narrative and extracts the deeper structural data the storyboard needs.
 
 ## Input
-Одна сцена з `01-master-narrative.json`
+One scene from `01-master-narrative.json`
 
 ## Output
 `02-scene-intelligence.json`:
@@ -401,20 +401,20 @@ git commit -m "docs: clarify Registry Builder on-demand trigger from Source Inge
 ```
 
 ## Rules
-- Спирається лише на дані з Master Narrative та реєстрів, нічого не вигадує.
-- Не визначає композицію кадру (це Storyboard Planner).
+- Relies only on data from Master Narrative and the registries — invents nothing.
+- Doesn't define shot composition (that's Storyboard Planner's job).
 ```
 
-- [ ] **Step 3: Переписати `skills/storyboard-planner/SKILL.md`**
+- [ ] **Step 3: Rewrite `skills/storyboard-planner/SKILL.md`**
 
 ```markdown
 # Skill: Storyboard Planner
 
 ## Purpose
-Розбиває сцену (вже збагачену Scene Intelligence Engine) на конкретні кінематографічні шоти.
+Breaks a scene (already enriched by Scene Intelligence Engine) into concrete cinematic shots.
 
 ## Input
-Збагачена сцена з `02-scene-intelligence.json`
+An enriched scene from `02-scene-intelligence.json`
 
 ## Output
 `03-storyboard.json`:
@@ -435,16 +435,16 @@ git commit -m "docs: clarify Registry Builder on-demand trigger from Source Inge
 ```
 
 ## Rules
-- Кожен шот має чітку композиційну ціль, не просто "показати сцену".
-- Використовує тільки `camera_id` з `registries/camera-registry.json`, не вигадує нові пресети на льоту (при потребі — викликає Registry Builder).
+- Every shot has a clear composition goal, not just "show the scene."
+- Uses only `camera_id` values from `registries/camera-registry.json` — never invents new presets on the fly (calls Registry Builder if a new one is needed).
 ```
 
-- [ ] **Step 4: Перевірити наявність обов'язкових секцій у всіх трьох файлах**
+- [ ] **Step 4: Verify the required sections are present in all three files**
 
 Run: `for f in skills/master-narrative/SKILL.md skills/scene-intelligence-engine/SKILL.md skills/storyboard-planner/SKILL.md; do c=$(grep -c "^## Purpose\|^## Input\|^## Output\|^## Rules" "$f"); echo "$f: $c"; done`
-Expected: усі три рядки показують `4` (окрім master-narrative, де є ще `## Example invocation` — рахуємо лише 4 обов'язкові секції, тому теж `4`)
+Expected: all three lines show `4` (master-narrative also has an `## Example invocation` section, but we're only counting the 4 required ones, so it's still `4`)
 
-- [ ] **Step 5: Валідувати всі три JSON-приклади**
+- [ ] **Step 5: Validate all three JSON examples**
 
 Run: `for f in skills/master-narrative/SKILL.md skills/scene-intelligence-engine/SKILL.md skills/storyboard-planner/SKILL.md; do sed -n '/```json/,/```/p' "$f" | sed '1d;$d' | python3 -m json.tool > /dev/null && echo "$f VALID"; done`
 Expected:
@@ -463,28 +463,28 @@ git commit -m "docs: add concrete output schemas to narrative/scene/storyboard s
 
 ---
 
-## Task 5b: Оновити Visual Shot Package, Prompt Compiler, Image Director
+## Task 5b: Update Visual Shot Package, Prompt Compiler, Image Director
 
 **Files:**
-- Modify: `skills/visual-shot-package/SKILL.md` (весь файл)
-- Modify: `skills/prompt-compiler/SKILL.md` (весь файл)
-- Modify: `skills/image-director/SKILL.md` (весь файл)
+- Modify: `skills/visual-shot-package/SKILL.md` (whole file)
+- Modify: `skills/prompt-compiler/SKILL.md` (whole file)
+- Modify: `skills/image-director/SKILL.md` (whole file)
 
 **Interfaces:**
-- Consumes: `03-storyboard.json` (Task 5a), `generation_backend` зі `style-registry.json` (Task 1)
-- Produces: `04-visual-shot-package.json`, `05-prompt-package.json`, `06-generation-log.json` — Task 6 і Task 7 посилаються на ці назви.
+- Consumes: `03-storyboard.json` (Task 5a), `generation_backend` from `style-registry.json` (Task 1)
+- Produces: `04-visual-shot-package.json`, `05-prompt-package.json`, `06-generation-log.json` — Tasks 6 and 7 reference these names.
 
-- [ ] **Step 1: Переписати `skills/visual-shot-package/SKILL.md`**
+- [ ] **Step 1: Rewrite `skills/visual-shot-package/SKILL.md`**
 
 ```markdown
 # Skill: Visual Shot Package
 
 ## Purpose
-Об'єднує storyboard-шот з даними реєстру в повну візуальну специфікацію, готову для компіляції промпту.
+Merges a storyboard shot with registry data into a complete visual spec, ready for prompt compilation.
 
 ## Input
-- Шот з `03-storyboard.json`
-- Відповідні записи з `registries/character-registry.json`, `location-registry.json`, `prop-registry.json`, `camera-registry.json`, `palette-registry.json`
+- A shot from `03-storyboard.json`
+- The matching entries from `registries/character-registry.json`, `location-registry.json`, `prop-registry.json`, `camera-registry.json`, `palette-registry.json`
 
 ## Output
 `04-visual-shot-package.json`:
@@ -507,21 +507,21 @@ git commit -m "docs: add concrete output schemas to narrative/scene/storyboard s
 ```
 
 ## Rules
-- НЕ генерує текстовий промпт — це відповідальність Prompt Compiler.
-- Обов'язково посилається на конкретні `reference_image_path` з character-registry для кожного персонажа в кадрі.
+- Does NOT generate the text prompt — that's Prompt Compiler's responsibility.
+- Must reference the specific `reference_image_path` from the character registry for every character in the frame.
 ```
 
-- [ ] **Step 2: Переписати `skills/prompt-compiler/SKILL.md`**
+- [ ] **Step 2: Rewrite `skills/prompt-compiler/SKILL.md`**
 
 ```markdown
 # Skill: Prompt Compiler
 
 ## Purpose
-Перетворює Visual Shot Package + дані реєстру в конкретний промпт для обраного генератора.
+Turns a Visual Shot Package plus registry data into a concrete prompt for the configured generator.
 
 ## Input
 - `04-visual-shot-package.json`
-- `registries/style-registry.json` для `generator_config` (поле `generation_backend`)
+- `registries/style-registry.json` for `generator_config` (the `generation_backend` field)
 
 ## Output
 `05-prompt-package.json`:
@@ -541,17 +541,17 @@ git commit -m "docs: add concrete output schemas to narrative/scene/storyboard s
 ```
 
 ## Rules
-- Вирішує конфлікти між registry-даними (напр. якщо освітлення сцени суперечить дефолтному освітленню локації — сцена має пріоритет).
-- Будує промпт під `generation_backend` зі `style-registry.json` (`claude-mcp-media` за замовчуванням для пілоту; `fallback_model` — задокументована, неактивна альтернатива, перехід на яку не вимагає змін цього skill, лише перемикання `generation_backend`).
+- Resolves conflicts between registry data (e.g. if a scene's lighting contradicts the location's default lighting, the scene wins).
+- Builds the prompt for the `generation_backend` in `style-registry.json` (`claude-mcp-media` by default for the pilot; `fallback_model` is a documented, inactive alternative — switching to it requires no changes to this skill, only flipping `generation_backend`).
 ```
 
-- [ ] **Step 3: Переписати `skills/image-director/SKILL.md`**
+- [ ] **Step 3: Rewrite `skills/image-director/SKILL.md`**
 
 ```markdown
 # Skill: Image Director
 
 ## Purpose
-Фінальний контроль якості перед власне генерацією: застосовує Style Preset проєкту, валідує консистентність із попередніми кадрами цього персонажа/локації, викликає генератор.
+The final quality control point before actual generation: applies the project's Style Preset, validates consistency against earlier frames of this character/location, and calls the generator.
 
 ## Input
 `05-prompt-package.json`
@@ -574,18 +574,18 @@ git commit -m "docs: add concrete output schemas to narrative/scene/storyboard s
 ```
 
 ## Rules
-- НЕ перепроєктовує персонажів чи середовища — лише застосовує стиль і валідує.
-- Якщо консистентність під питанням (новий кадр суттєво відрізняється від reference_image персонажа) — позначає `flagged_for_review: true`, не генерує мовчки.
-- Стиль застосовується ПІСЛЯ компіляції промпту, ніколи до.
-- Викликає генератор через `generation_backend` зі `style-registry.json` (`generate_image`/`upscale_image` для пілоту).
+- Does NOT redesign characters or environments — only applies style and validates.
+- If consistency is in question (a new frame diverges significantly from the character's reference_image), flags `flagged_for_review: true` rather than generating silently.
+- Style is applied AFTER prompt compilation, never before.
+- Calls the generator via the `generation_backend` in `style-registry.json` (`generate_image`/`upscale_image` for the pilot).
 ```
 
-- [ ] **Step 4: Перевірити наявність обов'язкових секцій у всіх трьох файлах**
+- [ ] **Step 4: Verify the required sections are present in all three files**
 
 Run: `for f in skills/visual-shot-package/SKILL.md skills/prompt-compiler/SKILL.md skills/image-director/SKILL.md; do c=$(grep -c "^## Purpose\|^## Input\|^## Output\|^## Rules" "$f"); echo "$f: $c"; done`
-Expected: усі три рядки показують `4`
+Expected: all three lines show `4`
 
-- [ ] **Step 5: Валідувати всі три JSON-приклади**
+- [ ] **Step 5: Validate all three JSON examples**
 
 Run: `for f in skills/visual-shot-package/SKILL.md skills/prompt-compiler/SKILL.md skills/image-director/SKILL.md; do sed -n '/```json/,/```/p' "$f" | sed '1d;$d' | python3 -m json.tool > /dev/null && echo "$f VALID"; done`
 Expected:
@@ -595,7 +595,7 @@ skills/prompt-compiler/SKILL.md VALID
 skills/image-director/SKILL.md VALID
 ```
 
-- [ ] **Step 6: Перевірити, що generation_backend згадано в prompt-compiler і image-director**
+- [ ] **Step 6: Verify `generation_backend` is mentioned in prompt-compiler and image-director**
 
 Run: `grep -l "generation_backend" skills/prompt-compiler/SKILL.md skills/image-director/SKILL.md | wc -l`
 Expected: `2`
@@ -609,59 +609,59 @@ git commit -m "docs: add concrete output schemas and MCP generator binding to co
 
 ---
 
-## Task 6: Новий skill — Produce Episode (оркестратор)
+## Task 6: New Skill — Produce Episode (Orchestrator)
 
 **Files:**
 - Create: `skills/produce-episode/SKILL.md`
 
 **Interfaces:**
-- Consumes: усі назви файлів і полів з Task 1–5b (`00-source-extract.json` … `06-generation-log.json`, `audio/*.json`, `locked`, `flagged_for_review`)
-- Produces: немає нового формату даних — лише послідовність викликів і чекпоінтів, яку читає людина (і пізніше OpenClaw)
+- Consumes: every file/field name from Tasks 1-5b (`00-source-extract.json` … `06-generation-log.json`, `audio/*.json`, `locked`, `flagged_for_review`)
+- Produces: no new data format — just a sequence of calls and checkpoints for a human (and later OpenClaw) to read
 
-- [ ] **Step 1: Створити `skills/produce-episode/SKILL.md`**
+- [ ] **Step 1: Create `skills/produce-episode/SKILL.md`**
 
 ```markdown
 # Skill: Produce Episode
 
 ## Purpose
-Оркеструє повний пайплайн виробництва одного епізоду: викликає всі skill-агенти по порядку, читає/пише файли епізоду за фіксованою нумерацією, зупиняється на чекпоінтах людського підтвердження. Це єдина команда, якою людина запускає весь процес — не 8 окремих команд.
+Orchestrates the full production pipeline for one episode: calls every skill agent in order, reads/writes episode files under the fixed numbering scheme, and pauses at human-confirmation checkpoints. This is the single command a human uses to run the whole process — not 8 separate commands.
 
 ## Input
-- `episode_id` (наприклад `ep02`)
-- `episodes/<episode_id>/script.md` — редакційний бриф: URL(и) джерела, обсяг епізоду, свідомі зміни
+- `episode_id` (e.g. `ep02`)
+- `episodes/<episode_id>/script.md` — the editorial brief: source URL(s), episode scope, deliberate changes
 
 ## Sequence
 
-1. **Source Ingestion** → пише `episodes/<episode_id>/00-source-extract.json`
-   → **ЧЕКПОІНТ 0**: показати `adaptation_notes` людині, чекати підтвердження достатньої трансформації
-2. **Registry Builder** (on-demand) → створює unlocked-записи нових персонажів/локацій у `registries/*.json`
-   → **ЧЕКПОІНТ 2**: показати нові записи, чекати `locked:true` від людини
-3. **Master Narrative** → пише `episodes/<episode_id>/01-master-narrative.json`
-   → **ЧЕКПОІНТ 1**: показати розбивку на сцени, чекати підтвердження
-4. Паралельно (незалежні гілки, можна виконувати в будь-якому порядку):
-   - **Візуальна гілка**: Scene Intelligence Engine → `02-scene-intelligence.json` → Storyboard Planner → `03-storyboard.json` (виклик Registry Builder on-demand, якщо з'являються нові локації/пропси) → Visual Shot Package → `04-visual-shot-package.json` → Prompt Compiler → `05-prompt-package.json`
-     → **ЧЕКПОІНТ 3**: показати список шотів і скомпільовані промпти, чекати підтвердження перед витратою викликів генерації
-     → Image Director → `06-generation-log.json` (позначає `flagged_for_review` замість мовчазної генерації)
-   - **Аудіо гілка**: Narrator/Audio Director → `audio/02b-narration-script.json` → `audio/generation-log.json` (позначає `flagged_for_review` замість мовчазної генерації)
-5. **Assembly** (механічний скрипт, не LLM-виклик) → збирає `06-generation-log.json` + `audio/generation-log.json` у `episodes/<episode_id>/final/<episode_id>.mp4`
-   → **ЧЕКПОІНТ 5**: показати відео, чекати рішення про публікацію
+1. **Source Ingestion** → writes `episodes/<episode_id>/00-source-extract.json`
+   → **CHECKPOINT 0**: show `adaptation_notes` to the human, wait for confirmation that the transformation is sufficient
+2. **Registry Builder** (on-demand) → creates unlocked entries for new characters/locations in `registries/*.json`
+   → **CHECKPOINT 2**: show the new entries, wait for the human to set `locked:true`
+3. **Master Narrative** → writes `episodes/<episode_id>/01-master-narrative.json`
+   → **CHECKPOINT 1**: show the scene breakdown, wait for confirmation
+4. In parallel (independent branches, may run in either order):
+   - **Visual branch**: Scene Intelligence Engine → `02-scene-intelligence.json` → Storyboard Planner → `03-storyboard.json` (calls Registry Builder on-demand if new locations/props appear) → Visual Shot Package → `04-visual-shot-package.json` → Prompt Compiler → `05-prompt-package.json`
+     → **CHECKPOINT 3**: show the shot list and compiled prompts, wait for confirmation before spending generation calls
+     → Image Director → `06-generation-log.json` (flags `flagged_for_review` instead of silently generating)
+   - **Audio branch**: Narrator/Audio Director → `audio/02b-narration-script.json` → `audio/generation-log.json` (flags `flagged_for_review` instead of silently generating)
+5. **Assembly** (a mechanical script, not an LLM call) → assembles `06-generation-log.json` + `audio/generation-log.json` into `episodes/<episode_id>/final/<episode_id>.mp4`
+   → **CHECKPOINT 5**: show the video, wait for a publish decision
 
 ## Rules
-- Кожен крок читає лише файл(и), явно перелічені в `Input` відповідного skill — ніколи не "згадує" дані з попередньої розмови в обхід файлу.
-- Зупинка на чекпоінті означає: показати людині конкретний артефакт (JSON/список/відео) і дослівно чекати на підтвердження в чаті, перш ніж читати наступний skill.
-- Якщо людина після чекпоінта редагує проміжний файл вручну (наприклад, править `01-master-narrative.json`) — наступний крок пайплайну читає відредаговану версію, не оригінальний вивід агента.
-- Будь-який крок можна перезапустити ізольовано (наприклад, "перегенеруй тільки 03-storyboard.json") — це просто повторний виклик відповідного skill з тим самим файлом на вході.
+- Every step reads only the file(s) explicitly listed in that skill's own `Input` — it never "recalls" data from earlier conversation instead of reading the file.
+- Pausing at a checkpoint means: show the human the concrete artifact (JSON/list/video) and wait, literally, for confirmation in chat before reading the next skill.
+- If the human manually edits an intermediate file after a checkpoint (e.g. edits `01-master-narrative.json`), the next pipeline step reads the edited version, not the agent's original output.
+- Any step can be rerun in isolation (e.g. "regenerate just `03-storyboard.json`") — that's simply calling the matching skill again with the same input file.
 ```
 
-- [ ] **Step 2: Перевірити, що всі 5 чекпоінтів згадані**
+- [ ] **Step 2: Verify all 5 checkpoints are mentioned**
 
-Run: `grep -c "ЧЕКПОІНТ" skills/produce-episode/SKILL.md`
+Run: `grep -c "CHECKPOINT" skills/produce-episode/SKILL.md`
 Expected: `5`
 
-- [ ] **Step 3: Перевірити, що всі назви файлів пайплайну присутні**
+- [ ] **Step 3: Verify every pipeline file name is present**
 
 Run: `for name in 00-source-extract.json 01-master-narrative.json 02-scene-intelligence.json 02b-narration-script.json 03-storyboard.json 04-visual-shot-package.json 05-prompt-package.json 06-generation-log.json; do grep -q "$name" skills/produce-episode/SKILL.md || echo "MISSING: $name"; done; echo DONE`
-Expected: `DONE` (без жодного `MISSING`)
+Expected: `DONE` (with no `MISSING` lines)
 
 - [ ] **Step 4: Commit**
 
@@ -672,10 +672,10 @@ git commit -m "feat: add Produce Episode orchestrating skill"
 
 ---
 
-## Task 7: Перескласти шаблон episodes/ep01 за новою нумерацією
+## Task 7: Restructure the episodes/ep01 Template Under the New Numbering
 
 **Files:**
-- Modify: `episodes/ep01/script.md` (весь файл)
+- Modify: `episodes/ep01/script.md` (whole file)
 - Create: `episodes/ep01/00-source-extract.json`
 - Create: `episodes/ep01/01-master-narrative.json`
 - Create: `episodes/ep01/02-scene-intelligence.json`
@@ -686,32 +686,32 @@ git commit -m "feat: add Produce Episode orchestrating skill"
 - Create: `episodes/ep01/audio/02b-narration-script.json`
 - Create: `episodes/ep01/audio/generation-log.json`
 - Create: `episodes/ep01/final/.gitkeep`
-- Delete: `episodes/ep01/shot-package.json` (замінено на `04-visual-shot-package.json`)
-- Delete: `episodes/ep01/prompts.json` (замінено на `05-prompt-package.json`)
+- Delete: `episodes/ep01/shot-package.json` (replaced by `04-visual-shot-package.json`)
+- Delete: `episodes/ep01/prompts.json` (replaced by `05-prompt-package.json`)
 
 **Interfaces:**
-- Consumes: усі схеми з Task 2–5b
-- Produces: робочий шаблон епізоду, який Task 8 описує в документації
+- Consumes: every schema from Tasks 2-5b
+- Produces: a working episode template, which Task 8 describes in the documentation
 
-- [ ] **Step 1: Переписати `episodes/ep01/script.md`**
+- [ ] **Step 1: Rewrite `episodes/ep01/script.md`**
 
 ```markdown
-# Episode 01 — [Робоча назва]
+# Episode 01 — [Working Title]
 
-## Джерело
-- URL(и) розділів: [посилання на джерело]
-- Розділи, що покриває цей епізод: [напр. 1-3]
+## Source
+- Chapter URL(s): [link to the source]
+- Chapters this episode covers: [e.g. 1-3]
 
-## Свідомі зміни (для Source Ingestion / Master Narrative)
-- [напр. "скоротити арку X до однієї сцени"]
-- [напр. "змінити ім'я персонажа Y"]
+## Deliberate Changes (for Source Ingestion / Master Narrative)
+- [e.g. "compress arc X into one scene"]
+- [e.g. "rename character Y"]
 
-## Нотатки
-- Персонажі, що з'являються вперше: ...
-- Нові локації: ...
+## Notes
+- Characters appearing for the first time: ...
+- New locations: ...
 ```
 
-- [ ] **Step 2: Створити нові порожні артефакти пайплайну**
+- [ ] **Step 2: Create the new empty pipeline artifacts**
 
 `episodes/ep01/00-source-extract.json`:
 ```json
@@ -789,20 +789,20 @@ git commit -m "feat: add Produce Episode orchestrating skill"
 }
 ```
 
-- [ ] **Step 3: Створити плейсхолдер для порожньої директорії final/**
+- [ ] **Step 3: Create a placeholder for the empty final/ directory**
 
 Run: `touch episodes/ep01/final/.gitkeep`
 
-- [ ] **Step 4: Видалити застарілі файли**
+- [ ] **Step 4: Delete the obsolete files**
 
 Run: `git rm episodes/ep01/shot-package.json episodes/ep01/prompts.json`
 
-- [ ] **Step 5: Валідувати всі нові JSON-файли**
+- [ ] **Step 5: Validate every new JSON file**
 
 Run: `for f in episodes/ep01/00-source-extract.json episodes/ep01/01-master-narrative.json episodes/ep01/02-scene-intelligence.json episodes/ep01/03-storyboard.json episodes/ep01/04-visual-shot-package.json episodes/ep01/05-prompt-package.json episodes/ep01/06-generation-log.json episodes/ep01/audio/02b-narration-script.json episodes/ep01/audio/generation-log.json; do python3 -m json.tool "$f" > /dev/null && echo "$f VALID"; done`
-Expected: усі 9 файлів виводять `VALID`
+Expected: all 9 files print `VALID`
 
-- [ ] **Step 6: Перевірити, що застарілі файли справді зникли**
+- [ ] **Step 6: Verify the obsolete files are actually gone**
 
 Run: `test -f episodes/ep01/shot-package.json && echo STILL_EXISTS || echo REMOVED; test -f episodes/ep01/prompts.json && echo STILL_EXISTS || echo REMOVED`
 Expected:
@@ -820,19 +820,19 @@ git commit -m "feat: restructure ep01 template to numbered pipeline artifact con
 
 ---
 
-## Task 8: Синхронізувати docs/architecture.md і README.md
+## Task 8: Sync docs/architecture.md and README.md
 
 **Files:**
-- Modify: `docs/architecture.md` (секції Pipeline, стадії, Registry System, Current JSON Artifacts, Open Items)
-- Modify: `README.md` (секція Структура)
+- Modify: `docs/architecture.md` (Pipeline, stage descriptions, Registry System, Current JSON Artifacts, Open Items sections)
+- Modify: `README.md` (Structure section)
 
 **Interfaces:**
-- Consumes: фінальний список skills/файлів з Task 1–7
-- Produces: немає — це документація, кінцевий артефакт для читання людиною/іншою LLM
+- Consumes: the final list of skills/files from Tasks 1-7
+- Produces: nothing new — this is documentation, a terminal artifact meant for a human or another LLM to read
 
-- [ ] **Step 1: Замінити секцію `## Pipeline` в `docs/architecture.md`**
+- [ ] **Step 1: Replace the `## Pipeline` section in `docs/architecture.md`**
 
-Знайти блок від `## Pipeline` до кінця опису `Image Director` (перед `## Registry System`) і замінити на:
+Find the block from `## Pipeline` through the end of the `Image Director` description (before `## Registry System`) and replace it with:
 
 ```markdown
 ## Pipeline
@@ -844,102 +844,102 @@ Source Ingestion
    ↓
 Master Narrative
    ↓
-   ├─── Візуальна гілка ────────────────────────┐
-   │  Scene Intelligence Engine                 │
-   │     ↓                                      │
-   │  Storyboard Planner ←── Registry Builder    │
-   │     ↓                                      │
-   │  Visual Shot Package                       │
-   │     ↓                                      │
-   │  Prompt Compiler                           │
-   │     ↓                                      │
-   │  Image Director → generate_image (MCP)     │
-   │                                             │
-   └─── Аудіо гілка ────────────────────────────┐│
-      Narrator / Audio Director                 ││
-        ↓                                       ││
-      create_voice + generate_audio (MCP)       ││
-                                                  ↓↓
+   ├─── Visual branch ───────────────────────────┐
+   │  Scene Intelligence Engine                  │
+   │     ↓                                       │
+   │  Storyboard Planner ←── Registry Builder     │
+   │     ↓                                       │
+   │  Visual Shot Package                        │
+   │     ↓                                       │
+   │  Prompt Compiler                            │
+   │     ↓                                       │
+   │  Image Director → generate_image (MCP)      │
+   │                                              │
+   └─── Audio branch ────────────────────────────┐│
+      Narrator / Audio Director                  ││
+        ↓                                        ││
+      create_voice + generate_audio (MCP)        ││
+                                                   ↓↓
                                               Assembly
-                                       (механічний ffmpeg-скрипт,
-                                        не LLM-агент)
+                                        (mechanical ffmpeg script,
+                                         not an LLM agent)
 ```
 
 ### Source Ingestion
-Перетворює готовий розділ(и) джерела (веб-новела/манхва за URL) у структуровані факти без збереження оригінального тексту дослівно. Вхід: URL(и) розділів. Вихід: `00-source-extract.json`. Ніколи не зберігає оригінальний текст дослівно — лише факти й короткі власні формулювання.
+Transforms one or more finished source chapters (a web novel/manhwa by URL) into structured facts without ever storing the original text verbatim. Input: chapter URL(s). Output: `00-source-extract.json`. Never stores the original text verbatim — only facts and short original phrasing.
 
 ### Master Narrative
-Перетворює факти від Source Ingestion в структурований наратив власною прозою. Вхід: `00-source-extract.json` + `script.md`. Вихід: наративні сцени. Ніколи не визначає візуал.
+Turns Source Ingestion's facts into a structured narrative in its own prose. Input: `00-source-extract.json` + `script.md`. Output: narrative scenes. Never defines visuals.
 
 ### Scene Intelligence Engine
-Виділяє: намір сцени, емоційну арку, хронологію, безперервність, сутності, логіку середовища.
+Extracts: scene intent, emotional arc, chronology, continuity, entities, environment logic.
 
 ### Storyboard Planner
-Розбиває сцени на кінематографічні шоти й візуальні біти. Визначає камери, композиційні цілі, темп.
+Breaks scenes into cinematic shots and visual beats. Determines cameras, composition goals, pacing.
 
 ### Registry Builder
-Підтримує незмінні реєстри: Character, Location, Prop, Camera, Palette, Style, Generator. Діє як Single Source of Truth. Викликається на вимогу — вперше одразу після Source Ingestion, повторно під час Storyboard Planner.
+Maintains immutable registries: Character, Location, Prop, Camera, Palette, Style, Generator. Acts as the Single Source of Truth. Called on demand — first right after Source Ingestion, again during Storyboard Planner.
 
 ### Visual Shot Package
-Об'єднує storyboard з інформацією реєстру в повні візуальні специфікації. Містить: камеру, освітлення, композицію, безперервність, обмеження рендеру, memory images, емоційну арку. **Не генерує промпти.**
+Merges the storyboard with registry data into complete visual specs. Contains: camera, lighting, composition, continuity, render constraints, memory images, emotional arc. **Does not generate prompts.**
 
 ### Prompt Compiler
-Приймає Visual Shot Package + Registry. Вирішує конфлікти, розгортає registry locks, будує промпти під `generation_backend` зі style-registry.
+Takes a Visual Shot Package + Registry. Resolves conflicts, expands registry locks, builds prompts for the `generation_backend` from the style registry.
 
 ### Image Director
-Приймає скомпільовані промпти. Застосовує Style Preset проєкту, валідує консистентність, викликає генератор (`generate_image`/`upscale_image` для пілоту). **Не перепроєктовує персонажів чи середовища.**
+Takes compiled prompts. Applies the project's Style Preset, validates consistency, calls the generator (`generate_image`/`upscale_image` for the pilot). **Never redesigns characters or environments.**
 
 ### Narrator / Audio Director
-Паралельна аудіо-гілка. Перетворює сцени Master Narrative у наративний/діалоговий текст, генерує озвучення через `create_voice`/`generate_audio`, використовуючи закріплені voice_id персонажів. Не залежить від візуальної гілки.
+Parallel audio branch. Turns Master Narrative scenes into narration/dialogue text, generates voice via `create_voice`/`generate_audio` using each character's locked voice_id. Independent of the visual branch.
 
 ### Assembly
-Механічний ffmpeg-скрипт, не LLM-агент. Збирає картинки за pacing_note шотів + аудіодоріжку + субтитри у фінальний mp4.
+A mechanical ffmpeg script, not an LLM agent. Assembles images per each shot's pacing_note + the audio track + subtitles into the final mp4.
 ```
 
-- [ ] **Step 2: Оновити секцію `## Current JSON Artifacts` в `docs/architecture.md`**
+- [ ] **Step 2: Update the `## Current JSON Artifacts` section in `docs/architecture.md`**
 
-Замінити рядок `Resolved Shot Package → Visual Shot Package → Prompt Package.` на:
+Replace the line `Resolved Shot Package → Visual Shot Package → Prompt Package.` with:
 
 ```markdown
-`00-source-extract.json` → `01-master-narrative.json` → `02-scene-intelligence.json` (+ паралельно `audio/02b-narration-script.json`) → `03-storyboard.json` → `04-visual-shot-package.json` → `05-prompt-package.json` → `06-generation-log.json` (+ `audio/generation-log.json`) → `final/<episode_id>.mp4`. Повний контракт полів кожного файлу — у відповідному `skills/<name>/SKILL.md`, секція Output.
+`00-source-extract.json` → `01-master-narrative.json` → `02-scene-intelligence.json` (+ in parallel `audio/02b-narration-script.json`) → `03-storyboard.json` → `04-visual-shot-package.json` → `05-prompt-package.json` → `06-generation-log.json` (+ `audio/generation-log.json`) → `final/<episode_id>.mp4`. Full field contract for each file lives in the corresponding `skills/<name>/SKILL.md`, Output section.
 ```
 
-- [ ] **Step 3: Оновити секцію `## Open Items` в `docs/architecture.md`**
+- [ ] **Step 3: Update the `## Open Items` section in `docs/architecture.md`**
 
-Замінити на:
+Replace with:
 
 ```markdown
-## Open Items (перенести в реєстри при заповненні)
+## Open Items (move into registries once populated)
 
-- [ ] Наповнити `registries/character-registry.json` для поточної історії (адаптованої з джерела)
-- [ ] Наповнити `registries/style-registry.json` (референс-зображення, палітра, лінія)
-- [ ] Обрати конкретне джерело (URL веб-новели/манхви) для першого епізоду
+- [ ] Populate `registries/character-registry.json` for the current story (adapted from the source)
+- [ ] Populate `registries/style-registry.json` (reference images, palette, line style)
+- [ ] Pick a specific source (a web-novel/manhwa URL) for the first episode
 ```
 
-- [ ] **Step 4: Оновити структуру в `README.md`**
+- [ ] **Step 4: Update the structure in `README.md`**
 
-Знайти блок дерева файлів (```` ``` memoria/ ... ```` ) і замінити на:
+Find the file-tree block (```` ``` memoria/ ... ```` ) and replace it with:
 
 ```markdown
 ```
 memoria/
-├── README.md                    ← цей файл
+├── README.md                    ← this file
 ├── docs/
-│   ├── architecture.md          ← опис пайплайну і принципів
-│   ├── business-analysis.md     ← ринок, копірайт, технології, бізнес-модель
-│   ├── pilot-plan.md            ← покроковий план пілотного запуску + план автоматизації OpenClaw
+│   ├── architecture.md          ← pipeline description and principles
+│   ├── business-analysis.md     ← market, copyright, technology, business model
+│   ├── pilot-plan.md            ← step-by-step pilot rollout plan + OpenClaw automation plan
 │   └── superpowers/
-│       ├── specs/                ← архітектурні дизайн-спеки
-│       └── plans/                ← implementation-плани
-├── registries/                  ← Single Source of Truth: персонажі, локації, стиль тощо
+│       ├── specs/                ← architecture design specs
+│       └── plans/                ← implementation plans
+├── registries/                  ← Single Source of Truth: characters, locations, style, etc.
 │   ├── character-registry.json
 │   ├── location-registry.json
 │   ├── prop-registry.json
 │   ├── camera-registry.json
 │   ├── palette-registry.json
 │   └── style-registry.json
-├── characters/                  ← character sheets (референсні зображення + опис) по кожному персонажу
-├── skills/                      ← кожен агент пайплайну як SKILL.md (сумісно з OpenClaw)
+├── characters/                  ← character sheets (reference images + description) per character
+├── skills/                      ← every pipeline agent as a SKILL.md (OpenClaw-compatible)
 │   ├── source-ingestion/
 │   ├── master-narrative/
 │   ├── scene-intelligence-engine/
@@ -949,10 +949,10 @@ memoria/
 │   ├── prompt-compiler/
 │   ├── image-director/
 │   ├── narrator-audio-director/
-│   └── produce-episode/         ← оркеструє весь пайплайн однією командою
-└── episodes/                    ← робочі файли по кожному епізоду
+│   └── produce-episode/         ← orchestrates the whole pipeline as one command
+└── episodes/                    ← working files for each episode
     └── ep01/
-        ├── script.md              ← редакційний бриф: URL джерела + свідомі зміни
+        ├── script.md              ← editorial brief: source URL + deliberate changes
         ├── 00-source-extract.json
         ├── 01-master-narrative.json
         ├── 02-scene-intelligence.json
@@ -965,10 +965,10 @@ memoria/
 ```
 ```
 
-- [ ] **Step 5: Перевірити, що нові skill-папки згадані в обох файлах**
+- [ ] **Step 5: Verify the new skill folders are mentioned in both files**
 
 Run: `for name in source-ingestion narrator-audio-director produce-episode; do grep -l "$name" docs/architecture.md README.md; done`
-Expected: кожен з трьох `name` знаходиться хоча б в одному з двох файлів (мінімум 3 рядки виводу сумарно)
+Expected: each of the three `name` values is found in at least one of the two files (at least 3 output lines total)
 
 - [ ] **Step 6: Commit**
 
@@ -979,19 +979,19 @@ git commit -m "docs: sync architecture.md and README.md with new pipeline stages
 
 ---
 
-## Фінальна перевірка репозиторію
+## Final Repository Check
 
-- [ ] **Step 1: Усі JSON-файли репозиторію валідні**
+- [ ] **Step 1: Every JSON file in the repository is valid**
 
 Run: `find registries episodes -name "*.json" -exec python3 -m json.tool {} \; > /dev/null && echo ALL_VALID`
 Expected: `ALL_VALID`
 
-- [ ] **Step 2: Усі SKILL.md мають 4 обов'язкові секції**
+- [ ] **Step 2: Every SKILL.md has the 4 required sections**
 
 Run: `for f in skills/*/SKILL.md; do c=$(grep -c "^## Purpose\|^## Input\|^## Output\|^## Rules" "$f"); [ "$c" -lt 4 ] && echo "INCOMPLETE: $f ($c)"; done; echo CHECK_DONE`
-Expected: `CHECK_DONE` без жодного `INCOMPLETE`
+Expected: `CHECK_DONE` with no `INCOMPLETE` lines
 
-- [ ] **Step 3: git status чистий (усе закомічено)**
+- [ ] **Step 3: git status is clean (everything committed)**
 
 Run: `git status --short`
-Expected: порожній вивід
+Expected: empty output

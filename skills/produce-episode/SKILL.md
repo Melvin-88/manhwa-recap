@@ -1,39 +1,41 @@
 # Skill: Produce Episode
 
 ## Purpose
-Оркеструє повний пайплайн виробництва одного епізоду: викликає всі skill-агенти по порядку, читає/пише файли епізоду за фіксованою нумерацією, зупиняється на чекпоінтах людського підтвердження. Це єдина команда, якою людина запускає весь процес — не 8 окремих команд.
+Orchestrates the full production pipeline for one episode: calls every skill agent in order, reads/writes episode files under the fixed numbering scheme, and pauses at human-confirmation checkpoints. This is the single command a human uses to run the whole process — not 8 separate commands.
+
+**Precondition for a new story:** if `story-config.json` and `source-material/` don't yet exist for this `story_slug`, onboard first (Source Ingestion, section "Onboarding a New Story": fix the language(s) → fully collect the work by volume), and only then call Produce Episode for a specific episode. Produce Episode does not perform onboarding itself.
 
 ## Input
-- `story_slug` (наприклад `the-greatest-heretic`) — визначає, з яким фолдером `stories/<story_slug>/` працює весь виклик
-- `episode_id` (наприклад `ep02`)
-- `stories/<story_slug>/episodes/<episode_id>/script.md` — редакційний бриф: URL(и) джерела, обсяг епізоду, свідомі зміни
-- `stories/<story_slug>/story-config.json` (`languages`, `default_language`) — список мов, для яких аудіо-гілка й Assembly мають прогонятись; якщо файл відсутній, вважати `languages: ["uk"]`
+- `story_slug` (e.g. `example-story`) — determines which `stories/<story_slug>/` folder the whole call operates on
+- `episode_id` (e.g. `ep02`)
+- `stories/<story_slug>/episodes/<episode_id>/script.md` — the editorial brief: source URL(s), episode scope, deliberate changes
+- `stories/<story_slug>/story-config.json` (`languages`, `default_language`) — the list of languages the audio branch and Assembly should run for; if the file is absent, assume `languages: ["uk"]`
 
-Усі шляхи файлів нижче (`episodes/...`, `registries/...`, `characters/...`, `source-material/...`) — відносні до кореня `stories/<story_slug>/`, а не кореня репозиторію. Див. `docs/architecture.md`, розділ "Структура для кількох історій".
+All file paths below (`episodes/...`, `registries/...`, `characters/...`, `source-material/...`) are relative to the `stories/<story_slug>/` root, not the repository root. See `docs/architecture.md`, section "Structure for Multiple Stories".
 
 ## Output
-Немає нового формату даних — цей skill лише оркеструє виклики інших skill-агентів у порядку нижче й читає/пише ті самі пронумеровані файли епізоду, що визначені в їхніх власних секціях Output.
+No new data format — this skill only orchestrates calls to other skill agents in the order below and reads/writes the same numbered episode files defined in each skill's own Output section.
 
 ## Sequence
 
-1. **Source Ingestion** → пише `episodes/<episode_id>/00-source-extract.json`
-   → **ЧЕКПОІНТ 0**: показати `adaptation_notes` людині, чекати підтвердження достатньої трансформації
-2. **Registry Builder** (on-demand) → створює unlocked-записи нових персонажів/локацій у `registries/*.json`
-   → **ЧЕКПОІНТ 2**: показати нові записи, чекати `locked:true` від людини
-3. **Master Narrative** → пише `episodes/<episode_id>/01-master-narrative.json`
-   → **ЧЕКПОІНТ 1**: показати розбивку на сцени, чекати підтвердження
-4. Паралельно (незалежні гілки, можна виконувати в будь-якому порядку):
-   - **Візуальна гілка**: Scene Intelligence Engine → `02-scene-intelligence.json` → Storyboard Planner → `03-storyboard.json` (виклик Registry Builder on-demand, якщо з'являються нові локації/пропси) → Visual Shot Package → `04-visual-shot-package.json` → Prompt Compiler → `05-prompt-package.json`
-     → **ЧЕКПОІНТ 3**: показати список шотів і скомпільовані промпти, чекати підтвердження перед витратою викликів генерації
-     → Image Director → `06-generation-log.json` (генерує й завантажує, `flagged_for_review` поки що тимчасове)
-     → Image QA → оновлює `06-generation-log.json` in place (судить кожен кадр, за потреби сам перегенеровує до 2 спроб, фінальне `flagged_for_review`)
-     → **ЧЕКПОІНТ 4**: лише якщо після Image QA лишились записи з `flagged_for_review: true` — показати їх і `qa_notes` людині, чекати рішення (ручне виправлення промпту чи прийняття як є); якщо таких записів немає — пропустити чекпоінт і йти далі автоматично
-   - **Аудіо гілка, окремо для кожної мови з `story-config.json.languages`**: Narrator/Audio Director → `audio/<lang>/02b-narration-script.json` → `audio/<lang>/generation-log.json` (позначає `flagged_for_review` замість мовчазної генерації). Візуальна гілка (кадри) спільна для всіх мов і генерується лише один раз.
-5. **Assembly, окремо для кожної мови** (механічний скрипт `scripts/assemble_episode.py --lang <lang>`, не LLM-виклик) → групує кадри `06-generation-log.json` по `scene_id` (через `03-storyboard.json`), для кожної сцени ділить тривалість відповідного аудіо з `audio/<lang>/generation-log.json` порівну між її кадрами, рендерить кожен кадр окремим відеокліпом (легкий Ken Burns zoom, аудіо змонтоване під нього) і склеює всі кліпи в `episodes/<episode_id>/final/<episode_id>_<lang>.mp4`. Пропускає будь-який запис із `flagged_for_review: true` (кадр чи аудіо) — не збирає відео з невиправленим браком мовчки. Кожна мова — повністю окремий експортований файл, не multi-track доріжки в одному відео.
-   → **ЧЕКПОІНТ 5**: показати відео(а), чекати рішення про публікацію
+1. **Source Ingestion** → writes `episodes/<episode_id>/00-source-extract.json`
+   → **CHECKPOINT 0**: show `adaptation_notes` to the human, wait for confirmation that the transformation is sufficient
+2. **Registry Builder** (on-demand) → creates unlocked entries for new characters/locations in `registries/*.json`
+   → **CHECKPOINT 2**: show the new entries, wait for the human to set `locked:true`
+3. **Master Narrative** → writes `episodes/<episode_id>/01-master-narrative.json`
+   → **CHECKPOINT 1**: show the scene breakdown, wait for confirmation
+4. In parallel (independent branches, may run in either order):
+   - **Visual branch**: Scene Intelligence Engine → `02-scene-intelligence.json` → Storyboard Planner → `03-storyboard.json` (calls Registry Builder on-demand if new locations/props appear) → Visual Shot Package → `04-visual-shot-package.json` → Prompt Compiler → `05-prompt-package.json`
+     → **CHECKPOINT 3**: show the shot list and compiled prompts, wait for confirmation before spending generation calls
+     → Image Director → `06-generation-log.json` (generates and downloads; `flagged_for_review` is provisional at this point)
+     → Image QA → updates `06-generation-log.json` in place (judges every frame, regenerates up to 2 attempts itself if needed, sets the final `flagged_for_review`)
+     → **CHECKPOINT 4**: only if entries with `flagged_for_review: true` remain after Image QA — show them and their `qa_notes` to the human, wait for a decision (manual prompt fix or accept as-is); if no such entries remain, skip this checkpoint and continue automatically
+   - **Audio branch, separately for each language in `story-config.json.languages`**: Narrator/Audio Director → `audio/<lang>/02b-narration-script.json` → `audio/<lang>/generation-log.json` (flags `flagged_for_review` instead of silently generating). The visual branch (frames) is shared across all languages and generated only once.
+5. **Assembly, separately for each language** (the mechanical script `scripts/assemble_episode.py --lang <lang>`, not an LLM call) → groups frames from `06-generation-log.json` by `scene_id` (via `03-storyboard.json`), for each scene splits that scene's audio duration evenly across its frames, renders each frame as its own video clip (a light Ken Burns zoom, audio mixed under it), and concatenates all clips into `episodes/<episode_id>/final/<episode_id>_<lang>.mp4`. Skips any entry with `flagged_for_review: true` (frame or audio) — never silently assembles a video with an unfixed defect. Each language is a fully separate exported file, not multi-track audio in one video.
+   → **CHECKPOINT 5**: show the video(s), wait for a publish decision
 
 ## Rules
-- Кожен крок читає лише файл(и), явно перелічені в `Input` відповідного skill — ніколи не "згадує" дані з попередньої розмови в обхід файлу.
-- Зупинка на чекпоінті означає: показати людині конкретний артефакт (JSON/список/відео) і дослівно чекати на підтвердження в чаті, перш ніж читати наступний skill.
-- Якщо людина після чекпоінта редагує проміжний файл вручну (наприклад, править `01-master-narrative.json`) — наступний крок пайплайну читає відредаговану версію, не оригінальний вивід агента.
-- Будь-який крок можна перезапустити ізольовано (наприклад, "перегенеруй тільки 03-storyboard.json") — це просто повторний виклик відповідного skill з тим самим файлом на вході.
+- Every step reads only the file(s) explicitly listed in that skill's own `Input` — it never "recalls" data from earlier conversation instead of reading the file.
+- Pausing at a checkpoint means: show the human the concrete artifact (JSON/list/video) and wait, literally, for confirmation in chat before reading the next skill.
+- If the human manually edits an intermediate file after a checkpoint (e.g. edits `01-master-narrative.json`), the next pipeline step reads the edited version, not the agent's original output.
+- Any step can be rerun in isolation (e.g. "regenerate just `03-storyboard.json`") — that's simply calling the matching skill again with the same input file.

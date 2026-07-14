@@ -1,10 +1,10 @@
 # Skill: Storyboard Planner
 
 ## Purpose
-Розбиває сцену (вже збагачену Scene Intelligence Engine) на конкретні кінематографічні шоти.
+Breaks a scene (already enriched by Scene Intelligence Engine) into concrete cinematic shots.
 
 ## Input
-Збагачена сцена з `02-scene-intelligence.json`
+An enriched scene from `02-scene-intelligence.json`
 
 ## Output
 `03-storyboard.json`:
@@ -25,6 +25,6 @@
 ```
 
 ## Rules
-- Кожен шот має чітку композиційну ціль, не просто "показати сцену".
-- Використовує тільки `camera_id` з `registries/camera-registry.json`, не вигадує нові пресети на льоту (при потребі — викликає Registry Builder).
-- **Виявляє повторювані нелюдські істоти/предмети.** Якщо та сама істота (за описом) фігурує в ≥2 шотах — викликає Registry Builder, щоб зареєструвати її в `creature-registry.json` з `recurring: true` (референс-аркуш генерується лише для таких, не для одноразових фонових монстрів). Так само для візуально своєрідних предметів, що повторюються в кількох шотах (зброя, унікальний артефакт) — реєструє `reference_image_path` у `prop-registry.json`.
+- Every shot has a clear composition goal, not just "show the scene."
+- Uses only `camera_id` values from `registries/camera-registry.json` — never invents new presets on the fly (calls Registry Builder if a new one is needed).
+- **Detects recurring non-human creatures/objects.** If the same creature (per its description) appears in ≥2 shots, calls Registry Builder to register it in `creature-registry.json` with `recurring: true` (a reference sheet is generated only for these, not for one-off background monsters). Likewise for visually distinctive objects that recur across multiple shots (a weapon, a unique artifact) — registers a `reference_image_path` in `prop-registry.json`.

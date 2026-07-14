@@ -1,126 +1,126 @@
-# Memoria — Дизайн пайплайну виконання (v2)
+# Memoria — Execution Pipeline Design (v2)
 
-> Статус: затверджено до впровадження. Наступний крок — implementation plan (superpowers:writing-plans).
+> Status: approved for implementation. Next step: an implementation plan (superpowers:writing-plans).
 
-## Контекст і рішення, з яких виходить цей дизайн
+## Context and Decisions This Design Builds On
 
-На момент написання жоден з 7 етапів `architecture.md` не виконувався жодного разу — є лише прозові специфікації агентів (`skills/*/SKILL.md`), порожні заготовки реєстрів і порожній шаблон `episodes/ep01/`. Це дизайн того, як саме пайплайн буде виконуватись — вручну зараз, з можливістю автоматизації (OpenClaw) пізніше без переписування контракту даних.
+At the time of writing, none of the 7 stages in `architecture.md` had ever been executed — there were only prose agent specs (`skills/*/SKILL.md`), empty registry scaffolding, and an empty `episodes/ep01/` template. This is a design for exactly how the pipeline will execute — manually for now, with room for automation (OpenClaw) later without rewriting the data contract.
 
-Ключові рішення, прийняті в брейнштормінгу:
+Key decisions made during brainstorming:
 
-1. **Джерело сюжету — переказ/адаптація готових історій** з зовнішніх ресурсів (агрегатори веб-новел/манхви за URL, напр. ranobelib.me), НЕ повністю оригінальні історії. Це свідомий вибір із прийнятим ризиком (derivative work за copyright law, можливий DMCA, політика YouTube "inauthentic content" від 15.07.2025 — задокументовано в `docs/business-analysis.md`). Мінімізація ризику закладена в архітектуру через новий етап Source Ingestion (розділ 2).
-2. **Генератор зображень/аудіо для пілоту — вбудовані MCP-інструменти Claude** (`generate_image`, `generate_video`, `generate_audio`, `create_voice`, `upscale_image` тощо), а не окремі API Nano Banana 2/Seedream 4.5/ElevenLabs. `generator_config` у реєстрі стилю зберігає це як змінну конфігурацію, щоб перехід на прямі API пізніше не вимагав переписування Prompt Compiler/Image Director.
-3. Поділ наративу на сцени та сцен на шоти **зберігається** — кожен виклик `generate_image` відповідає рівно одному шоту з власною композицією/камерою/continuity; без цього поділу нема на що мапити окремі виклики генератора.
+1. **The story source is a recap/adaptation of existing published works** from external sources (web-novel/manhwa aggregators by URL, e.g. ranobelib.me), NOT fully original stories. This is a deliberate choice with an accepted risk (derivative-work status under copyright law, possible DMCA action, YouTube's "inauthentic content" policy effective 2025-07-15 — documented in `docs/business-analysis.md`). Risk mitigation is built into the architecture via the new Source Ingestion stage (section 2).
+2. **The image/audio generator for the pilot is Claude's built-in MCP tools** (`generate_image`, `generate_video`, `generate_audio`, `create_voice`, `upscale_image`, etc.), rather than separate Nano Banana 2/Seedream 4.5/ElevenLabs APIs. `generator_config` in the style registry stores this as a swappable setting, so switching to direct APIs later requires no rewrite of Prompt Compiler/Image Director.
+3. Splitting the narrative into scenes and scenes into shots **is retained** — each `generate_image` call corresponds to exactly one shot with its own composition/camera/continuity; without that split there'd be nothing to map individual generator calls onto.
 
-## 1. Повний пайплайн
+## 1. Full Pipeline
 
 ```
-Source Ingestion (НОВЕ)
-   ↓ 00-source-extract.json (факти, не оригінальний текст)
-   ├──→ Registry Builder (on-demand: нові персонажі/локації з адаптованими іменами)
+Source Ingestion (NEW)
+   ↓ 00-source-extract.json (facts, not the original text)
+   ├──→ Registry Builder (on-demand: new characters/locations with adapted names)
    ↓
 Master Narrative
-   ↓ 01-master-narrative.json (сцени, написані власною прозою на основі фактів)
+   ↓ 01-master-narrative.json (scenes written in original prose based on facts)
    │
-   ├─── ВІЗУАЛЬНА ГІЛКА ────────────────────────────────────────┐
-   │  Scene Intelligence Engine → 02-scene-intelligence.json    │
-   │     ↓                                                      │
+   ├─── VISUAL BRANCH ─────────────────────────────────────────┐
+   │  Scene Intelligence Engine → 02-scene-intelligence.json   │
+   │     ↓                                                     │
    │  Storyboard Planner → 03-storyboard.json  ←── Registry Builder (on-demand)
-   │     ↓                                                      │
-   │  Visual Shot Package → 04-visual-shot-package.json         │
-   │     ↓                                                      │
-   │  Prompt Compiler → 05-prompt-package.json                  │
-   │     ↓                                                      │
-   │  Image Director → generate_image / upscale_image (MCP)     │
-   │     ↓ 06-generation-log.json                                │
-   │                                                             │
-   └─── АУДІО ГІЛКА (НОВЕ) ─────────────────────────────────────┐│
+   │     ↓                                                     │
+   │  Visual Shot Package → 04-visual-shot-package.json        │
+   │     ↓                                                     │
+   │  Prompt Compiler → 05-prompt-package.json                 │
+   │     ↓                                                     │
+   │  Image Director → generate_image / upscale_image (MCP)    │
+   │     ↓ 06-generation-log.json                               │
+   │                                                            │
+   └─── AUDIO BRANCH (NEW) ─────────────────────────────────────┐│
       Narrator / Audio Director                                 ││
         ↓ audio/02b-narration-script.json                       ││
       create_voice + generate_audio (MCP)                       ││
         ↓ audio/generation-log.json                             ││
-                                                                  ↓↓
+                                                                   ↓↓
                                                               Assembly
-                                                       (механічний ffmpeg-скрипт,
-                                                        НЕ LLM-агент)
+                                                       (mechanical ffmpeg script,
+                                                        NOT an LLM agent)
                                                               ↓
                                                           final/epNN.mp4
 ```
 
-### Нові/змінені відповідальності агентів
+### New/Changed Agent Responsibilities
 
-**Source Ingestion (новий skill, `skills/source-ingestion/SKILL.md`)**
-- Вхід: одна або кілька URL-адрес розділів джерела (одна ітерація = один діапазон розділів, що покривають один епізод; без масового скрейпінгу всієї новели за раз).
-- Обробка: прочитати розділ (`WebFetch`), витягти структуровані факти — персонажі (оригінальне ім'я → адаптоване ім'я, роль, риси), світ/сеттінг, ключові сюжетні події короткими власними формулюваннями.
-- **Жорстке правило:** оригінальний текст джерела ніколи не зберігається дослівно в жодному файлі репозиторію. Вихід має бути суттєво коротшим і переказаним власними словами — послідовність фактів, не послідовність перефразованих речень оригіналу.
-- Вихід: `00-source-extract.json` (див. розділ 2) + `adaptation_notes` (що саме змінено/стиснуто/перейменовано порівняно з джерелом — потрібно для чекпоінта 0).
+**Source Ingestion (new skill, `skills/source-ingestion/SKILL.md`)**
+- Input: one or more source-chapter URLs (one iteration = one range of chapters covering one episode; no bulk-scraping an entire novel at once).
+- Processing: read the chapter (`WebFetch`), extract structured facts — characters (original name → adapted name, role, traits), world/setting, key plot events in short original phrasing.
+- **Hard rule:** the original source text is never stored verbatim in any repository file. The output must be substantially shorter and retold in original words — a sequence of facts, not a sequence of paraphrased sentences tracking the original.
+- Output: `00-source-extract.json` (see section 2) + `adaptation_notes` (exactly what was changed/compressed/renamed relative to the source — needed for checkpoint 0).
 
-**Master Narrative (оновлена відповідальність)**
-- Вхід тепер — `00-source-extract.json` (факти), а не готовий сценарій людини. Пише власну прозу сцен на основі фактів. Це і є момент трансформації/стиснення, а не Source Ingestion.
-- Роль `script.md`/брифу людини змінюється: тепер це не сам сюжет, а **редакційний бриф** — які розділи джерела покриває епізод, які свідомі зміни вносити (наприклад, "скоротити цю арку до однієї сцени", "змінити мотивацію персонажа Х"). Файл лишається під тією ж назвою `script.md` для мінімальної руйнації існуючої структури.
+**Master Narrative (updated responsibility)**
+- Input is now `00-source-extract.json` (facts), not a ready-made human script. Writes scene prose in its own words based on the facts. This is where the transformation/compression actually happens, not Source Ingestion.
+- The role of `script.md`/the human brief changes: it's no longer the plot itself, but an **editorial brief** — which source chapters the episode covers, which deliberate changes to make (e.g. "compress this arc into one scene," "change character X's motivation"). The file keeps the name `script.md` to minimize disruption to the existing structure.
 
-**Narrator / Audio Director (новий skill, `skills/narrator-audio-director/SKILL.md`)**
-- Раніше озвучення взагалі не було частиною агентного пайплайну (в `pilot-plan.md` це був ручний крок "озвучити в ElevenLabs" поза схемою). Тепер це окрема гілка, паралельна візуальній, що стартує одразу після Master Narrative (не залежить від Storyboard/Shot Package).
-- Вхід: сцени з `01-master-narrative.json` (summary, emotional_beat) + `voice_id` з `character-registry.json`.
-- Вихід: `audio/02b-narration-script.json` (репліки/наратив по сценах) → виклики `create_voice` (один раз на персонажа, кешується) + `generate_audio`.
-- Правило (за аналогією з Image Director): якщо емоційний тон сцени суттєво розходиться з попереднім використанням голосу персонажа — позначає для ручної перевірки, не генерує мовчки.
+**Narrator / Audio Director (new skill, `skills/narrator-audio-director/SKILL.md`)**
+- Previously, narration wasn't part of the agent pipeline at all (in `pilot-plan.md` it was a manual "record via ElevenLabs" step outside the flow). Now it's a separate branch, parallel to the visual one, starting right after Master Narrative (independent of Storyboard/Shot Package).
+- Input: scenes from `01-master-narrative.json` (summary, emotional_beat) + `voice_id` from `character-registry.json`.
+- Output: `audio/02b-narration-script.json` (lines/narration per scene) → calls to `create_voice` (once per character, cached) + `generate_audio`.
+- Rule (by analogy with Image Director): if a scene's emotional tone diverges significantly from that character's previous voice usage, flags it for manual review rather than generating silently.
 
-**Registry Builder** — не послідовний етап, а сервіс на вимогу. Тепер викликається вперше одразу після Source Ingestion (створює unlocked-записи персонажів з адаптованими іменами), і повторно під час Storyboard Planner, якщо з'являються нові локації/пропси. Позиція в діаграмі позначає чекпоінт "усі сутності, на які посилається storyboard, мають `locked:true`".
+**Registry Builder** — not a sequential stage but an on-demand service. Now called for the first time right after Source Ingestion (creates unlocked character entries with adapted names), and again during Storyboard Planner whenever new locations/props appear. Its position in the diagram marks the checkpoint "every entity the storyboard references has `locked:true`."
 
-**Assembly (новий, механічний, НЕ LLM-агент)** — звичайний ffmpeg-скрипт: картинки за `pacing_note` кожного шоту + аудіодоріжка + субтитри → mp4. Не потребує LLM-судження, тому не оформлюється як SKILL.md.
+**Assembly (new, mechanical, NOT an LLM agent)** — a plain ffmpeg script: images per each shot's `pacing_note` + the audio track + subtitles → mp4. Requires no LLM judgment, so it isn't written up as a SKILL.md.
 
-## 2. Дата-контракти та структура файлів епізоду
+## 2. Data Contracts and Episode File Structure
 
 ```
 episodes/epNN/
-├── script.md                     ← редакційний бриф людини: URL(и) джерела, що покриває епізод, свідомі зміни
-├── 00-source-extract.json        ← факти від Source Ingestion (характери/світ/події, adaptation_notes)
-├── 01-master-narrative.json      ← сцени, написані власною прозою
-├── 02-scene-intelligence.json    ← збагачені сцени
-├── 03-storyboard.json            ← шоти по сценах
-├── 04-visual-shot-package.json   ← повні візуальні специфікації
-├── 05-prompt-package.json        ← скомпільовані промпти (generator-agnostic, MCP-ready)
-├── 06-generation-log.json        ← лог generate_image/upscale_image: asset paths, retries, timestamps
+├── script.md                     ← the human's editorial brief: source URL(s) covering the episode, deliberate changes
+├── 00-source-extract.json        ← facts from Source Ingestion (characters/world/events, adaptation_notes)
+├── 01-master-narrative.json      ← scenes written in original prose
+├── 02-scene-intelligence.json    ← enriched scenes
+├── 03-storyboard.json            ← shots per scene
+├── 04-visual-shot-package.json   ← complete visual specs
+├── 05-prompt-package.json        ← compiled prompts (generator-agnostic, MCP-ready)
+├── 06-generation-log.json        ← generate_image/upscale_image log: asset paths, retries, timestamps
 ├── audio/
-│   ├── 02b-narration-script.json ← репліки/наратив по сценах + voice_id
-│   └── generation-log.json       ← лог create_voice/generate_audio
+│   ├── 02b-narration-script.json ← lines/narration per scene + voice_id
+│   └── generation-log.json       ← create_voice/generate_audio log
 └── final/
-    └── epNN.mp4                  ← результат Assembly
+    └── epNN.mp4                  ← Assembly's output
 ```
 
-Нумерація файлів відображає порядок виконання і дозволяє зупинитись/продовжити на будь-якому кроці — людина може відкрити й відредагувати проміжний JSON вручну між етапами.
+File numbering reflects execution order and allows stopping/resuming at any step — a human can open and manually edit an intermediate JSON between stages.
 
-**Формат схем:** без окремих `.schema.json` з валідатором (контракт споживається LLM, а не кодом, що його перевіряє). Замість цього кожен `SKILL.md` отримує розширену секцію **Output** з конкретним прикладом JSON із типами полів замість поточного простого списку назв полів. Це залишає єдине джерело істини для контракту агента в тому ж файлі, що й опис його поведінки.
+**Schema format:** no separate `.schema.json` validator files (the contract is consumed by an LLM, not by code that validates it). Instead, every `SKILL.md` gets an expanded **Output** section with a concrete example JSON showing field types, rather than today's plain list of field names. This keeps a single source of truth for an agent's contract in the same file as its behavior description.
 
-## 3. Зміни в реєстрах
+## 3. Registry Changes
 
-- `character-registry.json`: поле `voice_id_elevenlabs` → `voice_id` (провайдер тепер MCP, не прив'язаний до ElevenLabs напряму). Додати поле `source_name` (оригінальне ім'я з джерела, для внутрішнього трасування адаптації, ніколи не виводиться в публічний контент).
-- `style-registry.json` → `generator_config`: `primary_model: "nano-banana-2"` → `generation_backend: "claude-mcp-media"`; `fallback_model` лишається задокументованим, але неактивним записом для майбутнього переходу на прямі API без переписування Prompt Compiler/Image Director.
-- Location/Prop/Camera/Palette-registry: структура вже достатня, наповнення даними — контент-робота для конкретної історії, не частина цього архітектурного дизайну.
+- `character-registry.json`: field `voice_id_elevenlabs` → `voice_id` (the provider is now MCP, no longer tied directly to ElevenLabs). Add a `source_name` field (the original name from the source, for internal adaptation traceability, never surfaced in public-facing content).
+- `style-registry.json` → `generator_config`: `primary_model: "nano-banana-2"` → `generation_backend: "claude-mcp-media"`; `fallback_model` stays as a documented but inactive entry for a future switch to direct APIs without rewriting Prompt Compiler/Image Director.
+- Location/Prop/Camera/Palette registries: the structure is already sufficient — populating them with data is content work for a specific story, not part of this architectural design.
 
-## 4. Модель оркестрації
+## 4. Orchestration Model
 
-Один новий skill/slash-command `produce-episode`, що виконує всю послідовність (Source Ingestion → ... → Assembly) в межах однієї Claude-сесії на епізод, читаючи/записуючи пронумеровані JSON-файли з розділу 2, з паузами на чекпоінтах (розділ 5).
+One new skill/slash-command, `produce-episode`, that runs the full sequence (Source Ingestion → ... → Assembly) within a single Claude session per episode, reading/writing the numbered JSON files from section 2, pausing at checkpoints (section 5).
 
-Файлова природа контракту означає: людина будь-коли може відредагувати проміжний JSON вручну або попросити Claude перевиконати лише один етап (наприклад, "перегенеруй тільки storyboard") — без потреби в окремих slash-командах на кожен агент.
+The file-based nature of the contract means: a human can edit an intermediate JSON by hand at any time, or ask Claude to rerun just one stage (e.g. "regenerate just the storyboard") — with no need for separate slash-commands per agent.
 
-Це дає automation-readiness безкоштовно: коли дійде до OpenClaw, він викликає ті самі `SKILL.md` і читає/пише ті самі файли неінтерактивно — модель даних переробляти не треба.
+This buys automation-readiness for free: once OpenClaw enters the picture, it calls the same `SKILL.md` files and reads/writes the same files non-interactively — the data model needs no rework.
 
-## 5. Чекпоінти людського підтвердження
+## 5. Human Confirmation Checkpoints
 
-0. **Після Source Ingestion** (новий, найважливіший з огляду на прийнятий copyright-ризик) — людина підтверджує, що `adaptation_notes` показують достатню трансформацію (перейменування, стиснення, зміни), перш ніж факти йдуть у Master Narrative.
-1. Після Master Narrative — підтвердити розбивку на сцени (дешево переробити зараз, дорого — після решти етапів).
-2. Після Registry Builder — підтвердити нові character/location записи перед `locked:true` (правило вже задокументоване в `skills/registry-builder/SKILL.md`).
-3. Після Prompt Compiler, перед Image Director — підтвердити список шотів перед тим, як витрачати виклики генерації.
-4. Image Director / Narrator-Audio Director — автоматично позначають невідповідні кадри/тон голосу для ручної перевірки (правило вже є для Image Director, поширюється на аудіо-гілку).
-5. Після Assembly — фінальний перегляд відео перед публікацією.
+0. **After Source Ingestion** (new, the most important one given the accepted copyright risk) — the human confirms that `adaptation_notes` shows sufficient transformation (renaming, compression, changes) before the facts flow into Master Narrative.
+1. After Master Narrative — confirm the scene breakdown (cheap to redo now, expensive after the later stages).
+2. After Registry Builder — confirm new character/location entries before `locked:true` (this rule is already documented in `skills/registry-builder/SKILL.md`).
+3. After Prompt Compiler, before Image Director — confirm the shot list before spending generation calls.
+4. Image Director / Narrator-Audio Director — automatically flag mismatched frames/voice tone for manual review (the rule already exists for Image Director, extended to the audio branch).
+5. After Assembly — a final video review before publishing.
 
-## 6. Критерій успіху
+## 6. Success Criterion
 
-Прив'язка до вже існуючого бенчмарку з `pilot-plan.md`: повний цикл епізоду ≤ 2–3 дні ручної роботи. Якщо архітектура з чекпоінтами виявиться повільнішою — перший кандидат на спрощення: злити Scene Intelligence Engine + Storyboard Planner в один виклик (вихід SIE ні на що інше, крім Storyboard, не впливає).
+Tied to the existing benchmark from `pilot-plan.md`: a full episode cycle in ≤ 2-3 days of manual work. If the checkpoint-driven architecture turns out slower, the first candidate for simplification is merging Scene Intelligence Engine + Storyboard Planner into one call (SIE's output feeds nothing except Storyboard).
 
-## Явно поза межами цього дизайну
+## Explicitly Out of Scope for This Design
 
-- Наповнення реєстрів реальними даними конкретної історії — контент-робота наступної фази, не архітектура.
-- Юридична консультація щодо конкретного джерела/тайтлу — рішення прийняти ризик вже зафіксовано користувачем; це не юридична порада.
-- Технічна реалізація Assembly-скрипта (ffmpeg-команди) — деталь наступного implementation plan.
+- Populating the registries with a specific story's real data — that's content work for the next phase, not architecture.
+- Legal advice about a specific source/title — the decision to accept the risk has already been made by the user; this isn't legal advice.
+- The technical implementation of the Assembly script (ffmpeg commands) — a detail for the next implementation plan.

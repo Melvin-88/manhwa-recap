@@ -1,62 +1,62 @@
-# Бізнес-аналіз: YouTube-канал AI-переказів манги/манхви (проєкт Memoria)
+# Business Analysis: a YouTube Channel for AI Manga/Manhwa Recaps (Project Memoria)
 
-> Дата дослідження: липень 2026. Ринок і інструменти змінюються швидко — перевіряти актуальність перед прийняттям рішень на основі конкретних цифр.
+> Research date: July 2026. The market and tools change fast — verify currency before making decisions based on specific figures.
 
 ## TL;DR
 
-- Ніша прибуткова, але насичена й ризикована. RPM $2–5 в manhwa-recap сегменті, тримається на обсягах (500K–2M переглядів на вірусне відео). Основний дохід — не AdSense, а Boosty/Patreon/платний Telegram.
-- План «зробити унікальний твір» через зміну імен **юридично не захищає**. Зміна деталей не усуває похідності (derivative work). Практичний ризик — Content ID/DMCA-страйки та політика YouTube від 15.07.2025 про "inauthentic content".
-- У 2026 reference-моделі (Nano Banana 2, Seedream 4.5) дають кращу консистентність персонажа без тренування LoRA, ніж класична зв'язка SDXL+LoRA+IP-Adapter+ControlNet (ці три сигнали конфліктують між собою).
+- The niche is profitable but crowded and risky. RPM is $2–5 in the manhwa-recap segment, sustained by volume (500K–2M views for a viral video). Primary income isn't AdSense — it's Boosty/Patreon/paid Telegram.
+- The plan to "make a unique work" by changing names does **not** provide legal protection. Changing details doesn't remove derivative-work status. The practical risk is Content ID/DMCA strikes and YouTube's "inauthentic content" policy effective 2025-07-15.
+- As of 2026, reference-conditioned models (Nano Banana 2, Seedream 4.5) give better character consistency without LoRA training than the classic SDXL+LoRA+IP-Adapter+ControlNet stack (those three signals conflict with each other).
 
-## 1. Ринок і конкуренція
+## 1. Market and Competition
 
-Домінує довгий "склеєний" переказ (isekai/regression/"системи прокачки"): Solo Leveling, TBATE, Tower of God, Omniscient Reader. Монетизація багатоканальна: AdSense + Boosty + платний Telegram (через Tribute) + бренд-інтеграції.
+The dominant format is a long, "stitched-together" recap (isekai/regression/"power-leveling systems"): titles like Solo Leveling, TBATE, Tower of God, Omniscient Reader. Monetization is multi-channel: AdSense + Boosty + paid Telegram (via Tribute) + brand integrations.
 
-Англомовні бенчмарки: *Manga Explained* — ~1.19 млн переглядів/міс, ~$4.66K/міс AdSense (vidIQ). *Manhwa Recap Daily* — 34 200 підписників, ~$1.21 на 1000 переглядів (низький RPM).
+English-language benchmarks: *Manga Explained* — ~1.19M views/month, ~$4.66K/month AdSense (vidIQ). *Manhwa Recap Daily* — 34,200 subscribers, ~$1.21 per 1,000 views (low RPM).
 
-Регіональний фактор: перегляди з України/СНД дають нижчий CPM за США/Європу.
+Regional factor: views from Ukraine/CIS carry a lower CPM than US/Europe.
 
-## 2. Авторське право і політика YouTube
+## 2. Copyright and YouTube Policy
 
-- **Derivative work:** зміна кількох деталей/імен не створює новий незалежний твір за правом США (Cornell Wex, Copyright Office Circular 14).
-- **Fair use:** захищає коментар/критику/огляд (Campbell v. Acuff-Rose, 1994), але Andy Warhol Foundation v. Goldsmith (2023) звузив межі трансформативності через ринковий вплив.
-- **Content ID ≠ страйк:** Content ID забирає дохід автоматично; DMCA-страйк видаляє відео; 3 страйки за 90 днів = термінація каналу.
-- **Shueisha 2021:** хвиля страйків виявилась шахрайством третьої особи, що видавала себе за видавця — показує, що система вразлива до зловживань і діє "спочатку видали, потім розберемось".
-- **Політика "inauthentic content" (з 15.07.2025):** YouTube прямо демонетизує "AI-generated content made with generic templates giving the impression of mass production without adding original, authentic insights". Це стосується саме формату "шаблон → TTS → AI-картинки, серійно".
+- **Derivative work:** changing a few details/names doesn't create a new, independent work under US law (Cornell Wex, Copyright Office Circular 14).
+- **Fair use:** protects commentary/critique/review (*Campbell v. Acuff-Rose*, 1994), but *Andy Warhol Foundation v. Goldsmith* (2023) narrowed the bounds of transformativeness via market-effect analysis.
+- **Content ID ≠ a strike:** Content ID claims revenue automatically; a DMCA strike removes the video; 3 strikes within 90 days = channel termination.
+- **Shueisha, 2021:** a wave of strikes turned out to be fraud by a third party impersonating the publisher — showing the system is vulnerable to abuse and operates on a "take down first, sort it out later" basis.
+- **The "inauthentic content" policy (effective 2025-07-15):** YouTube explicitly demonetizes "AI-generated content made with generic templates giving the impression of mass production without adding original, authentic insights." This applies directly to the "template → TTS → AI images, produced serially" format.
 
-## 3. Технології AI (2026)
+## 3. AI Technology (2026)
 
-Класична зв'язка LoRA + IP-Adapter + ControlNet конфліктує сама з собою (задокументована проблема). Reference-моделі витіснили цей підхід:
+The classic LoRA + IP-Adapter + ControlNet stack conflicts with itself (a documented issue). Reference-conditioned models have displaced that approach:
 
-- **Nano Banana 2/Pro** (Gemini 3.1 Flash Image, лютий 2026) — до 5 персонажів, 14 об'єктів, стабільний на 8-10+ редагуваннях, 3-6 референсів без тренування.
-- **Seedream 4.5** — сильний для ітеративного img2img, дешевший (~$0.03/зображення).
-- **Midjourney Niji 7** (січень 2026) — найкраща художня естетика, слабша консистентність.
+- **Nano Banana 2/Pro** (Gemini 3.1 Flash Image, February 2026) — up to 5 characters, 14 objects, stable across 8-10+ edits, 3-6 references with no training.
+- **Seedream 4.5** — strong for iterative img2img, cheaper (~$0.03/image).
+- **Midjourney Niji 7** (January 2026) — the best artistic aesthetic, weaker consistency.
 
-Рекомендований цикл: Seedream 4.5 для варіантів → Nano Banana Pro для фінального полірування.
+Recommended cycle: Seedream 4.5 for variants → Nano Banana Pro for final polish.
 
-**Копірайт на img2img з реальних сторінок манги:** ризикованіше за генерацію з текстових описів. U.S. Copyright Office (травень 2025): якщо вихід "substantially similar to training data inputs" — сильний аргумент, що це порушення прав на відтворення й похідні твори.
+**Copyright risk of img2img from actual manga pages:** riskier than generating from text descriptions. US Copyright Office (May 2025): if the output is "substantially similar to training data inputs," that's a strong argument for infringement of reproduction and derivative-work rights.
 
-## 4. Життєздатність бізнесу
+## 4. Business Viability
 
-- Собівартість відео — одиниці доларів (ElevenLabs ~$0.10/1000 символів, зображення — центи за кадр).
-- Час до YPP-порогу (1000 підписників + 4000 год перегляду/рік) — кілька місяців за високого темпу, але монетизація AdSense негарантована через п.2.
-- Головні ризики за пріоритетом: (1) демонетизація за inauthentic content, (2) DMCA-страйки/термінація каналу, (3) насиченість ніші, (4) алгоритмічна залежність + низький регіональний CPM.
+- Per-video cost is a few dollars (ElevenLabs ~$0.10/1,000 characters, images cost cents per frame).
+- Time to reach the YPP threshold (1,000 subscribers + 4,000 watch hours/year) is a few months at a fast production pace, but AdSense monetization isn't guaranteed given section 2.
+- Top risks in priority order: (1) demonetization for inauthentic content, (2) DMCA strikes/channel termination, (3) niche saturation, (4) algorithmic dependency + low regional CPM.
 
-## Ключовий висновок
+## Key Conclusion
 
-План "переказ + косметичні зміни" тягне у двох протилежних напрямках одночасно: чим ближче до оригіналу — тим сильніший копірайт-ризик; чим більше шаблонної автоматизації — тим сильніший ризик демонетизації. Найбезпечніша конфігурація — **оригінальні історії**: нульовий копірайт-ризик, власне IP, можна ліцензувати далі.
+The "recap + cosmetic changes" plan pulls in two opposite directions at once: the closer to the original, the higher the copyright risk; the more templated automation, the higher the demonetization risk. The safest configuration is **original stories**: zero copyright risk, owned IP, further licensable.
 
-## Рекомендації
+## Recommendations
 
-1. Відмовитись від "1:1 переказ + косметичні зміни".
-2. Замінити генератор у Memoria з SDXL/Flux на Nano Banana 2 + Seedream 4.5.
-3. Генерувати персонажів лише з текстових описів, не з img2img реальних сторінок манги.
-4. Пілот на оригінальній історії з авторським коментарем/аналізом як шар "authentic insight".
-5. Вести глядача на Telegram/Boosty з першого відео (низький CPM у СНД-трафіку).
+1. Drop the "1:1 recap + cosmetic changes" plan.
+2. Replace Memoria's generator from SDXL/Flux with Nano Banana 2 + Seedream 4.5.
+3. Generate characters only from text descriptions, never via img2img from actual manga pages.
+4. Pilot on an original story with authorial commentary/analysis as the "authentic insight" layer.
+5. Drive viewers to Telegram/Boosty from the very first video (low CPM on CIS traffic).
 
 ## Caveats
 
-- Точні метрики каналів-прикладів не отримані (Social Blade/vidIQ рендерять через JS) — для точних цифр використати YouTube Data API v3 з Channel ID.
-- Оцінки доходів з гайдів AI-сервісів мають маркетинговий ухил; сторонні трекери надійніші, але теж оціночні.
-- Правові висновки загального характеру, не юридична консультація. Ситуація з AI-копірайтом у судах США не усталена; українське/ЄС право має свої нюанси.
-- Моделі оновлюються щокілька місяців — перевіряти актуальні бенчмарки перед фіналізацією пайплайна.
+- Exact metrics for the benchmark channels weren't obtained (Social Blade/vidIQ render via JS) — for precise figures, use the YouTube Data API v3 with a Channel ID.
+- Revenue estimates from AI-service guides skew toward marketing; third-party trackers are more reliable but still estimates.
+- Legal conclusions are general in nature, not legal advice. US case law on AI copyright is unsettled; Ukrainian/EU law has its own nuances.
+- Models update every few months — verify current benchmarks before finalizing the pipeline.

@@ -1,11 +1,11 @@
 # Skill: Visual Shot Package
 
 ## Purpose
-Об'єднує storyboard-шот з даними реєстру в повну візуальну специфікацію, готову для компіляції промпту.
+Merges a storyboard shot with registry data into a complete visual spec, ready for prompt compilation.
 
 ## Input
-- Шот з `03-storyboard.json`
-- Відповідні записи з `registries/character-registry.json`, `location-registry.json`, `prop-registry.json`, `camera-registry.json`, `palette-registry.json`
+- A shot from `03-storyboard.json`
+- The matching entries from `registries/character-registry.json`, `location-registry.json`, `prop-registry.json`, `camera-registry.json`, `palette-registry.json`
 
 ## Output
 `04-visual-shot-package.json`:
@@ -28,5 +28,5 @@
 ```
 
 ## Rules
-- НЕ генерує текстовий промпт — це відповідальність Prompt Compiler.
-- Обов'язково посилається на конкретні `reference_sheet_path` з character-registry для кожного персонажа в кадрі.
+- Does NOT generate the text prompt — that's Prompt Compiler's responsibility.
+- Must reference the specific `reference_sheet_path` from the character registry for every character in the frame.

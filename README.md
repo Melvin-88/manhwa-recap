@@ -1,29 +1,29 @@
 # Memoria — AI Content Pipeline
 
-Registry-driven pipeline для генерації озвучених серій з AI-згенерованими зображеннями (формат "аудіокнига з картинками").
+A registry-driven pipeline for producing narrated series with AI-generated images (an "audiobook with pictures" format).
 
-## Навіщо ця структура
+## Why This Structure
 
-Все в цьому репозиторії — звичайний Markdown/JSON. Жодних форматів, специфічних для однієї LLM. Це означає:
-- Будь-яка LLM (Claude, GPT, Gemini, локальна модель) може прочитати весь контекст проєкту, просто відкривши файли.
-- Структура `skills/<name>/SKILL.md` — це той самий формат, який використовує **OpenClaw** (`~/.openclaw` шукає папки з SKILL.md). Коли дійдеш до автоматизації через OpenClaw, ці skills підключаються напряму, без переписування.
-- Git-friendly: diff, історія змін, відкат.
+Everything in this repository is plain Markdown/JSON. No formats specific to a single LLM. That means:
+- Any LLM (Claude, GPT, Gemini, a local model) can read the whole project context just by opening the files.
+- The `skills/<name>/SKILL.md` layout is the same format used by **OpenClaw** (`~/.openclaw` looks for folders containing SKILL.md). Whenever automation via OpenClaw happens, these skills plug in directly, with no rewriting.
+- Git-friendly: diffs, change history, rollback.
 
-## Структура
+## Structure
 
-`skills/` і `docs/` — спільні для всіх історій (story-agnostic пайплайн). Дані конкретної адаптації (реєстри, епізоди, референс-зображення) живуть в окремому фолдері під `stories/<story-slug>/`, щоб різні історії ніколи не змішувались.
+`skills/` and `docs/` are shared across every story (a story-agnostic pipeline). A given adaptation's data (registries, episodes, reference images) lives in its own folder under `stories/<story-slug>/`, so different stories never mix.
 
 ```
 memoria/
-├── README.md                    ← цей файл
+├── README.md                    ← this file
 ├── docs/
-│   ├── architecture.md          ← опис пайплайну, принципів і структури для кількох історій
-│   ├── business-analysis.md     ← ринок, копірайт, технології, бізнес-модель
-│   ├── pilot-plan.md            ← покроковий план пілотного запуску + план автоматизації OpenClaw
+│   ├── architecture.md          ← pipeline description, principles, and the multi-story structure
+│   ├── business-analysis.md     ← market, copyright, technology, business model
+│   ├── pilot-plan.md            ← step-by-step pilot rollout plan + OpenClaw automation plan
 │   └── superpowers/
-│       ├── specs/                ← архітектурні дизайн-спеки
-│       └── plans/                ← implementation-плани
-├── skills/                      ← кожен агент пайплайну як SKILL.md (сумісно з OpenClaw, спільний для всіх історій)
+│       ├── specs/                ← architecture design specs
+│       └── plans/                ← implementation plans
+├── skills/                      ← every pipeline agent as a SKILL.md (OpenClaw-compatible, shared across stories)
 │   ├── source-ingestion/
 │   ├── master-narrative/
 │   ├── scene-intelligence-engine/
@@ -33,23 +33,23 @@ memoria/
 │   ├── prompt-compiler/
 │   ├── image-director/
 │   ├── narrator-audio-director/
-│   └── produce-episode/         ← оркеструє весь пайплайн однією командою (приймає story_slug)
-└── stories/                     ← одна папка на кожну адаптовану історію
-    └── the-greatest-heretic/    ← story-slug першої історії в роботі
+│   └── produce-episode/         ← orchestrates the whole pipeline as one command (takes story_slug)
+└── stories/                     ← one folder per adapted story
+    └── <story-slug>/            ← e.g. stories/example-story/
         ├── source-material/
-        │   └── master-extract.json   ← накопичені факти з джерела (Source Ingestion)
-        ├── registries/                ← Single Source of Truth ЛИШЕ цієї історії
+        │   └── master-extract.json   ← accumulated source facts (Source Ingestion)
+        ├── registries/                ← Single Source of Truth for THIS story only
         │   ├── character-registry.json
         │   ├── location-registry.json
         │   ├── prop-registry.json
         │   ├── camera-registry.json
         │   ├── palette-registry.json
         │   └── style-registry.json
-        ├── characters/                ← фактичні файли референс-аркушів персонажів
+        ├── characters/                ← actual character reference-sheet files
         │   └── CHAR_001/reference.png
-        └── episodes/                  ← робочі файли по кожному епізоду цієї історії
+        └── episodes/                  ← working files for each of this story's episodes
             └── ep01/
-                ├── script.md              ← редакційний бриф: URL джерела + свідомі зміни
+                ├── script.md              ← editorial brief: source URL + deliberate changes
                 ├── 00-source-extract.json
                 ├── 01-master-narrative.json
                 ├── 02-scene-intelligence.json
@@ -57,19 +57,19 @@ memoria/
                 ├── 04-visual-shot-package.json
                 ├── 05-prompt-package.json
                 ├── 06-generation-log.json
-                ├── generated/             ← фактичні файли згенерованих кадрів (не URL)
+                ├── generated/             ← actual generated frame files (not URLs)
                 ├── audio/
                 └── final/
 ```
 
-**Нова історія:** створити `stories/<новий-slug>/` за цим самим шаблоном — `skills/` і `docs/` міняти не потрібно.
+**A new story:** create `stories/<new-slug>/` following this same template — no need to change `skills/` or `docs/`.
 
-## Як передати іншій LLM або OpenClaw
+## Handing This Off to Another LLM or to OpenClaw
 
-**Іншій LLM:** дай їй прочитати `docs/architecture.md` + відповідний `registries/*.json` + `skills/<потрібний>/SKILL.md`. Цього достатньо для повного контексту без історії чату.
+**To another LLM:** have it read `docs/architecture.md` + the relevant `registries/*.json` + the needed `skills/<name>/SKILL.md`. That's enough for full context without any chat history.
 
-**OpenClaw:** вкажи `~/.openclaw/skills` (або відповідний shared-skills шлях) на папку `skills/` з цього репозиторію — кожна підпапка з SKILL.md стає доступною агенту як окремий інструмент.
+**OpenClaw:** point `~/.openclaw/skills` (or the corresponding shared-skills path) at this repo's `skills/` folder — every subfolder containing a SKILL.md becomes available to the agent as a separate tool.
 
-## Статус проєкту
+## Project Status
 
-Пілотна фаза. Дивись `docs/pilot-plan.md` для поточних кроків і чеклиста.
+Pilot phase. See `docs/pilot-plan.md` for current steps and the checklist.
